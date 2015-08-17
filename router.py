@@ -105,3 +105,32 @@ class RegexStructure(object):
             if result:
                 result = result_type(result)
             setattr(self, name, result)
+
+    def add_attributes(self, attributes):
+        """Add attributes from regexes to the object"""
+        for name, (regex, result_type) in attributes.items():
+            result = search(regex, self.config)
+            if result:
+                result = result_type(result)
+            setattr(self, name, result)
+
+
+class Router(RegexStructure):
+    """Class that analyses and stores the settings for a Router.
+
+
+      Todo:
+       - also use interfaces that are not shut down
+       - constructor method, to create router from filename
+       - change router to config
+    """
+    _attributes = {
+        'hostname': (r'^hostname\s+(\S+)$', str)
+        }
+
+    def __init__(self, config):
+        super(self.__class__, self).__init__(config)
+        self.interfaces = self._load_interfaces()
+
+    def _load_interfaces(self):
+        pass
