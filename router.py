@@ -133,4 +133,59 @@ class Router(RegexStructure):
         self.interfaces = self._load_interfaces()
 
     def _load_interfaces(self):
-        pass
+        interfaces = {}
+        for configlet in self.config:   # fix this
+            interface = Interface(configlet)
+            interfaces[interface.name] = interface
+        return interfaces
+
+
+class Interface(RegexStructure):
+    """Class that analyses and stores the settings for a Router interface.
+
+        Todo:
+      - shaper on the interface
+      - seperate generic config items from BT or Tele2 specific items
+      - secondary ip's
+      - secondary standby groups
+      - vrf
+    """
+    _attributes = {
+        'name':              (r'^interface\s(\S+)\s*.*$', str),
+        'description':       (r'^\s*description\s+(.+)$', str),
+        'ip':                (r'^\s*ip\saddress\s(\d+\.\d+\.\d+\.\d+\s+\d+\.\d+\.\d+\.\d+)\s*$',
+                              lambda ip: IPv4Network(re.sub(r'\s+', '/', ip))),
+        'ip_unnumbered':     (r'^\s*ip\s+unnumbered\s+(\S+)\s*$', str),
+        'ip_negotiated':     (r'^\s*ip\saddress\s(negotiated)\s*$', str),
+        'admin_bandwidth':   (r'^\s*bandwidth\s+(\d+)', int),
+        'hsrp':              (r'^\s*standby\s+\d+\s+ip\s+(\d+\.\d+\.\d+\.\d+)\s*$',
+                              IPv4Address),
+        'policy_in':         (r'^\s*service-policy\s+input\s+(\S+)\s*$', str),
+        'policy_out':        (r'^\s*service-policy\s+output\s+(\S+)\s*$', str),
+        'atm_bandwidth':     (r'^\s*(?:cbr|vbr-nrt)\s+(\d+)\s*', int),
+        'rate_limit':        (r'^\s*rate-limit\s+output\s+(\d+)\s',
+                              lambda x: int(x)/1000),
+        'description_speed': (r'^\s*description\s+.+[S|s]peed:(\d+).+$', int),
+        'description_oid':   (r'^\s*description\s+.+SR:(\d+).+$', str),
+        'crypto':            (r'^\s*(crypto.+)$', str)
+        }
+
+    def __init__(self, config):
+        super(self.__class__, self).__init__(config)
+        self.parent = ''
+        self._load_interface_details()    # (self)?
+
+    def _load_interface_details(self):
+        regex = r'^\s*ip\s+helper-address\s+(\d+\.\d+\.\d+\.\d+)\s*$'
+        helpers = search_all(regex, self.config)
+        helpers = map(lambda ip: IPv4Address(ip), helpers)
+        self.helpers = list(set(helpers))
+
+        regex = r'^\s*Vlan\s*(\d+)\s*$'
+        vlan = search(regex, self.name)
+        if not vlan:
+            regex = r'^\s*encapsulation\s+dot1Q\s+(\d+)\s*$'
+            vlan = search(regex, self.config)
+        if vlan:
+            self.vlan = int(vlan)
+
