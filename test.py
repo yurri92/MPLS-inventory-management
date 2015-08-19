@@ -7,10 +7,13 @@ FILENAME = 'router_1_conf.cfg'
 
 
 class TestRouter(unittest.TestCase):
-    def setUp(self):
+    config = None
+
+    @classmethod
+    def setUpClass(cls):
         path = os.path.join(DIR, FILENAME)
         file = open(path, 'rb')
-        self.config = file.readlines()
+        cls.config = file.readlines()
         file.close
 
     def test_load(self):
