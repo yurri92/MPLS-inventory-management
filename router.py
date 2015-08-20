@@ -1,5 +1,5 @@
 import re
-from ipaddress import IPv4Network, IPv4Address
+from ipaddr import IPv4Network, IPv4Address
 
 COMPILED_REGEXES = {}
 
@@ -56,6 +56,33 @@ def search_all(regex, thing):
     return result
 
 
+def search_configlets(key, config, delimiter='!'):
+    """Search a config and return a list of configlets that starts with the key.
+        key should be a string, e.g. 'interface'
+        config should be a list of lines or a string that can be split in multiple lines
+        configlet start with the key, lines are added untill the delimiter or the key is found"""
+    result = []
+    if isinstance(config, str):
+        config = config.splitlines
+    configlet = []
+    track = False
+    for line in config:
+        if search('^\s*('+key+')', line) and track is False:
+            configlet.append(line)
+            track = True
+        elif search('^\s*('+key+')', line) and track is True:
+            result.append(configlet)
+            configlet = []
+            track = False
+        elif search('^\s*('+delimiter+')', line) and track is True:
+            result.append(configlet)
+            configlet = []
+            track = False
+        elif track is True:
+            configlet.append(line)
+    return result
+
+
 class RegexStructure(object):
     """Create attributes by applying a regex search on a config.
 
@@ -97,6 +124,7 @@ class RegexStructure(object):
 
     """
     _attributes = {}
+    _objects = {}
 
     def __init__(self, config):
         self.config = config
@@ -114,6 +142,20 @@ class RegexStructure(object):
                 result = result_type(result)
             setattr(self, name, result)
 
+    def add_objects(self, name, key, cls):
+        result = []
+        if hasattr(cls, '_attributes'):
+            if 'name' in cls._attributes.keys():
+                result = {}
+        configlets = search_configlets(key, self.config)
+        for configlet in configlets:
+            obj = cls(configlet)
+            if isinstance(result, dict):
+                result[obj.name] = obj
+            else:
+                result.append(obj)
+        setattr(self, name, result)
+
 
 class Router(RegexStructure):
     """Class that analyses and stores the settings for a Router.
@@ -130,11 +172,12 @@ class Router(RegexStructure):
 
     def __init__(self, config):
         super(self.__class__, self).__init__(config)
-        self.interfaces = self._load_interfaces()
+        self.add_objects('interfaces', 'interface', Interface)
+        #self.interfaces = self._load_interfaces()
 
     def _load_interfaces(self):
         interfaces = {}
-        for configlet in self.config:   # fix this
+        for configlet in search_configlets('interface', self.config):  # fix this
             interface = Interface(configlet)
             interfaces[interface.name] = interface
         return interfaces
@@ -144,8 +187,6 @@ class Interface(RegexStructure):
     """Class that analyses and stores the settings for a Router interface.
 
         Todo:
-      - shaper on the interface
-      - seperate generic config items from BT or Tele2 specific items
       - secondary ip's
       - secondary standby groups
       - vrf
