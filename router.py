@@ -208,7 +208,12 @@ class QoSPolicy(RegexStructure):
                 self.qos_bandwidth = self._find_total_bandwidth_percent()
 
     def _find_priority_class(self):
-        pass
+        result = ''
+        for class_name, qos_class in self.qos_classes.items():
+            if 'priority' in ''.join(qos_class.config[1:]):
+                result = qos_class
+        return result
+
 
     def _find_total_qos_bandwidth(self):
         qos_bandwidth = 0

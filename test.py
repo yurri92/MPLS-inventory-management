@@ -49,6 +49,16 @@ class TestRouter(unittest.TestCase):
         i = self.r.interfaces['GigabitEthernet0/1.101']
         self.assertEqual(str(ip), str(i.ip))
 
+    def test_interface_helpers(self):
+        helpers = [IPv4Address('10.100.1.2'), IPv4Address('10.100.1.1')]
+        i = self.r.interfaces['GigabitEthernet0/0.100']
+        self.assertItemsEqual(i.helpers, helpers)
+
+    def test_interface_vlan(self):
+        vlan = 100
+        i = self.r.interfaces['GigabitEthernet0/0.100']
+        self.assertEqual(vlan, i.vlan)
+
     def test_parent_interface(self):
         parent = 'GigabitEthernet0/0'
         i = self.r.interfaces['GigabitEthernet0/0.100']
@@ -91,7 +101,7 @@ class TestRouter(unittest.TestCase):
         bandwidth = 18810
         q = self.r.qos_policies['SAMPLE-QOS-OUT']
         self.assertEqual(bandwidth, q.qos_bandwidth)
-    
+
     def test_shaper_bandwidth(self):
         bandwidth = 19800
         q = self.r.qos_policies['SAMPLE-SHAPER-OUT']
@@ -101,6 +111,11 @@ class TestRouter(unittest.TestCase):
         sub_policy = 'SAMPLE-QOS-OUT'
         q = self.r.qos_policies['SAMPLE-SHAPER-OUT']
         self.assertEqual(sub_policy, q.sub_policy)
+
+    def test_priority_class(self):
+        priority_class = 'realtime_output'
+        q = self.r.qos_policies['SAMPLE-QOS-OUT']
+        self.assertEqual(priority_class, q.priority_class.name)        
 
 
 if __name__ == '__main__':
