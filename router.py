@@ -64,7 +64,7 @@ def search_configlets(key, config, delimiter='!'):
 
         The configlet starts with the key, lines are added untill the delimiter or the key is found
         Todo:
-        - stop when the indentation stops
+        - stop when the indentation stops, see vrf configuration in BGP
     """
     result = []
     if isinstance(config, str):
@@ -131,14 +131,17 @@ class RegexStructure(object):
 
     """
     _single_attributes = {}
-    _children = {}
+    _multiple_children = {}
+    _single_children = {}
 
     def __init__(self, config):
         self.config = config
         for name, (regex, result_type) in self._single_attributes.items():
             self._add_single_attribute(name, regex, result_type)
-        for name, (key, child_cls) in self._children.items():
-            self._add_children(name, key, child_cls)
+        for name, (key, result_type) in self._multiple_children.items():
+            self._add_multiple_children(name, key, result_type)
+        for name, (key, result_type) in self._single_children.items():
+            self._add_single_children(name, key, result_type)
 
     def _add_single_attribute(self, name, regex, result_type):
         result = search(regex, self.config)
@@ -146,19 +149,50 @@ class RegexStructure(object):
             result = result_type(result)
         setattr(self, name, result)
 
-    def _add_children(self, name, key, child_cls):
+    def _add_multiple_children(self, name, key, result_type):
         result = []
-        if hasattr(child_cls, '_single_attributes'):
-            if 'name' in child_cls._single_attributes.keys():
+        if hasattr(result_type, '_single_attributes'):
+            if 'name' in result_type._single_attributes.keys():
                 result = {}
         configlets = search_configlets(key, self.config)
         for configlet in configlets:
-            child = child_cls(configlet)
+            child = result_type(configlet)
             if isinstance(result, dict):
                 result[child.name] = child
             else:
                 result.append(child)
         setattr(self, name, result)
+
+    def _add_single_children(self, name, key, result_type):
+        result = ''
+        configlets = search_configlets(key, self.config)
+        if configlets:
+            result = result_type(configlets[0])
+        setattr(self, name, result)
+
+
+class routerBGP(RegexStructure):
+    """Class that analyses and stores the settings for BGP configuration"""
+
+    _single_attributes = {
+        'local_as': (r'^s*router\sbgp\s+(\d+)\s*$', int)
+    }
+
+    def __init__(self, config):
+        super(self.__class__, self).__init__(config)
+        self.neighbors = self._get_bgp_neighbors()
+
+    def _get_bgp_neighbors(self):
+        active_neighbors = []
+        regex = r'^\s*neighbor\s+(\d+\.\d+\.\d+\.\d+)\s+remote-as\s+(\d+)$'
+        all_neighbors = search_all(regex, self.config)
+        for neighbor, remote_as in all_neighbors:
+            regex = r'^\s*neighbor\s+('+neighbor+')\s+shutdown'
+            shutdown = bool(search(regex, self.config))
+            if not shutdown:
+                active_neighbors.append((IPv4Address(neighbor), int(remote_as)))
+        active_neighbors = list(set(active_neighbors))
+        return active_neighbors
 
 
 class QoSClass(RegexStructure):
@@ -195,7 +229,7 @@ class QoSPolicy(RegexStructure):
                           lambda x: int(x)/1000)
         }
 
-    _children = {
+    _multiple_children = {
         'qos_classes': ('class', QoSClass)
     }
 
@@ -213,7 +247,6 @@ class QoSPolicy(RegexStructure):
             if 'priority' in ''.join(qos_class.config[1:]):
                 result = qos_class
         return result
-
 
     def _find_total_qos_bandwidth(self):
         qos_bandwidth = 0
@@ -291,9 +324,12 @@ class Router(RegexStructure):
     _single_attributes = {
         'hostname': (r'^hostname\s+(\S+)$', str)
         }
-    _children = {
+    _multiple_children = {
         'interfaces': ('interface', Interface),
         'qos_policies': ('policy-map\s+\S+', QoSPolicy)
+        }
+    _single_children = {
+        'bgp': ('router bgp\s+\d+', routerBGP)
         }
 
     def __init__(self, config):
@@ -314,3 +350,22 @@ class Router(RegexStructure):
                 self.interfaces[name].parent = self.interfaces[parent]
 
 
+class MPLSRouter(Router):
+    """Analysis and stores the settings of a MPLS Router
+       a mpls router has:
+       - a wan interface
+       - a speed
+       - redundancy"""
+
+    # example how to extend attributes
+    _single_attributes = {
+        'local_as': ('^\s*router\sbgp\s(\d+)\s*$', int)
+        }
+    _single_attributes.update(Router._single_attributes)
+
+    def __init__(self, config):
+        super(Router, self).__init__(config)
+        self.wan = self._find_wan_interface()
+
+    def _find_wan_interface(self):
+        pass

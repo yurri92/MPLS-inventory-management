@@ -1,6 +1,6 @@
 import unittest
 import os
-from router import Router
+from router import Router, MPLSRouter
 from ipaddr import IPv4Network, IPv4Address
 
 DIR = 'sampleconfigs'
@@ -117,11 +117,52 @@ class TestRouter(unittest.TestCase):
         q = self.r.qos_policies['SAMPLE-QOS-OUT']
         self.assertEqual(priority_class, q.priority_class.name)
 
+    def test_bgp_config(self):
+        bgp_config = ['router bgp 64512\n',
+                      ' bgp log-neighbor-changes\n',
+                      ' network 10.0.10.0 mask 255.255.255.0\n',
+                      ' network 10.0.20.0 mask 255.255.255.0\n',
+                      ' network 10.0.30.0 mask 255.255.255.0\n',
+                      ' network 10.0.40.0 mask 255.255.255.0\n',
+                      ' aggregate-address 10.0.0.0 255.255.0.0 summary-only\n',
+                      ' timers bgp 10 30\n',
+                      ' neighbor 10.0.10.3 remote-as 64512\n',
+                      ' neighbor 10.0.10.3 next-hop-self\n',
+                      ' neighbor 10.0.10.3 send-community both\n',
+                      ' neighbor 10.0.10.3 prefix-list BLOCK_MGMT in\n',
+                      ' neighbor 192.168.100.1 remote-as 10001\n',
+                      ' neighbor 192.168.100.1 description *** EBGP to PE router ***\n',
+                      ' neighbor 192.168.100.1 update-source GigabitEthernet0/1.101\n',
+                      ' neighbor 192.168.100.1 send-community\n',
+                      ' neighbor 192.168.100.1 soft-reconfiguration inbound\n',
+                      ' neighbor 192.168.100.1 route-map SET-LOCAL-PREF in\n',
+                      ' neighbor 192.168.100.1 filter-list 1 out\n']
+        self.assertSequenceEqual(bgp_config, self.r.bgp.config)
 
-class TestMPLSRouter(object):
-    """testclass for the MPLS router"""
-    def __init__(self, arg):
-        super(TestMPLSRouter, self).__init__()         
+    def test_bgp_neighbors(self):
+        bgp_neighbors = [(IPv4Address('10.0.10.3'), 64512),
+                         (IPv4Address('192.168.100.1'), 10001)]
+        self.assertItemsEqual(bgp_neighbors, self.r.bgp.neighbors)
+
+
+class TestMPLSRouter(unittest.TestCase):
+    config = None
+
+    @classmethod
+    def setUpClass(cls):
+        path = os.path.join(DIR, FILENAME)
+        file = open(path, 'rb')
+        cls.config = file.readlines()
+        file.close
+        cls.r = MPLSRouter(cls.config)
+
+    def test_local_as(self):
+        local_as = 64512
+        self.assertEqual(local_as, self.r.local_as)
+
+    def test_wan_interface(self):
+        wan_interface = 'GigabitEthernet0/1.101'
+        self.assertEqual(wan_interface, self.wan.name)
 
 
 if __name__ == '__main__':
