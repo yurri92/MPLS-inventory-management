@@ -12,15 +12,14 @@ class TestRouter(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        path = os.path.join(DIR, FILENAME)
-        file = open(path, 'rb')
-        cls.config = file.readlines()
-        file.close
-        cls.r = Router(cls.config)
+        cls.r = Router.load(FILENAME, DIR)
 
     def test_load(self):
-        r = Router(self.config)
-        self.assertEqual(r.config, self.config)
+        path = os.path.join(DIR, FILENAME)
+        file = open(path, 'rb')
+        config = file.readlines()
+        file.close
+        self.assertEqual(self.r.config, config)
 
     def test_hostname(self):
         self.assertEqual(self.r.hostname, 'router-1')

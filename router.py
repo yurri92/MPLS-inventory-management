@@ -1,4 +1,5 @@
 import re
+import os
 from ipaddr import IPv4Network, IPv4Address
 
 COMPILED_REGEXES = {}
@@ -348,6 +349,14 @@ class Router(RegexStructure):
             parent = search(r'^\s*(\S+)\.\d+', name)
             if parent in self.interfaces.keys():
                 self.interfaces[name].parent = self.interfaces[parent]
+
+    @classmethod
+    def load(cls, filename, path=''):
+        path = os.path.join(path, filename)
+        file = open(path, 'rb')
+        config = file.readlines()
+        file.close
+        return cls(config)
 
 
 class MPLSRouter(Router):
