@@ -16,14 +16,14 @@ class TestRouter(unittest.TestCase):
         file = open(path, 'rb')
         cls.config = file.readlines()
         file.close
+        cls.r = Router(cls.config)
 
     def test_load(self):
-        self.r = Router(self.config)
-        self.assertEqual(self.r.config, self.config)
+        r = Router(self.config)
+        self.assertEqual(r.config, self.config)
 
     def test_hostname(self):
-        r = Router(self.config)
-        self.assertEqual(r.hostname, 'router-1')
+        self.assertEqual(self.r.hostname, 'router-1')
 
     def test_interface_names(self):
         interface_names = ['Loopback1', 'Embedded-Service-Engine0/0',
@@ -31,8 +31,7 @@ class TestRouter(unittest.TestCase):
                            'GigabitEthernet0/0.200', 'GigabitEthernet0/0.300',
                            'GigabitEthernet0/0.400', 'GigabitEthernet0/1',
                            'GigabitEthernet0/1.101', 'GigabitEthernet0/2']
-        r = Router(self.config)
-        interfaces = r.interfaces
+        interfaces = self.r.interfaces
         self.assertItemsEqual(interfaces.keys(), interface_names)
 
     def test_interface_configlet(self):
@@ -42,22 +41,24 @@ class TestRouter(unittest.TestCase):
                      ' ip address 192.168.100.2 255.255.255.252\n',
                      ' ip mtu 1500\n',
                      ' no cdp enable\n']
-        r = Router(self.config)
-        i = r.interfaces['GigabitEthernet0/1.101']
+        i = self.r.interfaces['GigabitEthernet0/1.101']
         self.assertSequenceEqual(i.config, configlet)
 
     def test_interface_ip(self):
         ip = IPv4Network('192.168.100.2/255.255.255.252')
-        r = Router(self.config)
-        i = r.interfaces['GigabitEthernet0/1.101']
+        i = self.r.interfaces['GigabitEthernet0/1.101']
         self.assertEqual(str(ip), str(i.ip))
+
+    def test_parent_interface(self):
+        parent = 'GigabitEthernet0/0'
+        i = self.r.interfaces['GigabitEthernet0/0.100']
+        self.assertEqual(parent, i.parent.name)
 
     def test_qos_policy_names(self):
         qos_policy_names = ['SAMPLE-QOS-IN',
                             'SAMPLE-QOS-OUT',
                             'SAMPLE-SHAPER-OUT']
-        r = Router(self.config)
-        qos_policies = r.qos_policies
+        qos_policies = self.r.qos_policies
         self.assertItemsEqual(qos_policies.keys(), qos_policy_names)
 
     def test_qos_policy_configlet(self):
@@ -83,9 +84,23 @@ class TestRouter(unittest.TestCase):
                     ' class class-default\n',
                     '  bandwidth 1211\n',
                     '  random-detect\n']
-        r = Router(self.config)
-        q = r.qos_policies['SAMPLE-QOS-OUT']
+        q = self.r.qos_policies['SAMPLE-QOS-OUT']
         self.assertSequenceEqual(q.config, configlet)
+
+    def test_qos_bandwidth(self):
+        bandwidth = 18810
+        q = self.r.qos_policies['SAMPLE-QOS-OUT']
+        self.assertEqual(bandwidth, q.qos_bandwidth)
+    
+    def test_shaper_bandwidth(self):
+        bandwidth = 19800
+        q = self.r.qos_policies['SAMPLE-SHAPER-OUT']
+        self.assertEqual(bandwidth, q.shaper)
+
+    def test_sub_policy(self):
+        sub_policy = 'SAMPLE-QOS-OUT'
+        q = self.r.qos_policies['SAMPLE-SHAPER-OUT']
+        self.assertEqual(sub_policy, q.sub_policy)
 
 
 if __name__ == '__main__':

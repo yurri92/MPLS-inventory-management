@@ -85,6 +85,8 @@ def search_configlets(key, config, delimiter='!'):
             track = False
         elif track is True:
             configlet.append(line)
+    if configlet:
+        result.append(configlet)
     return result
 
 
@@ -291,4 +293,19 @@ class Router(RegexStructure):
 
     def __init__(self, config):
         super(self.__class__, self).__init__(config)
+        self._set_parent_interfaces()
+
+    def _set_parent_interfaces(self):
+        """Sets the parent attribute of an interface to the name of the parent interface.
+
+        interfaces['VirtualTemplate1'].parent = 'ATM0.101'
+        interfaces['ATM0.101'].parent = 'ATM0'
+
+        Useful for finding QoS polices on parent interfaces
+        """
+        for name, interface in self.interfaces.items():
+            parent = search(r'^\s*(\S+)\.\d+', name)
+            if parent in self.interfaces.keys():
+                self.interfaces[name].parent = self.interfaces[parent]
+
 
