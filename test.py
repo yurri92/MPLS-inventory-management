@@ -3,7 +3,7 @@ import os
 from router import Router, MPLSRouter
 from ipaddr import IPv4Network, IPv4Address
 
-DIR = 'sampleconfigs'
+PATH = 'sampleconfigs'
 FILENAME = 'router_1_conf.cfg'
 
 
@@ -12,10 +12,10 @@ class TestRouter(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.r = Router.load(FILENAME, DIR)
+        cls.r = Router.load(FILENAME, PATH)
 
     def test_load(self):
-        path = os.path.join(DIR, FILENAME)
+        path = os.path.join(PATH, FILENAME)
         file = open(path, 'rb')
         config = file.readlines()
         file.close
@@ -149,7 +149,7 @@ class TestMPLSRouter(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        path = os.path.join(DIR, FILENAME)
+        path = os.path.join(PATH, FILENAME)
         file = open(path, 'rb')
         cls.config = file.readlines()
         file.close

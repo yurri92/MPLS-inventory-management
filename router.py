@@ -102,7 +102,7 @@ class RegexStructure(object):
     ...  _single_attributes = {'hostname': (r'^hostname\s+(\S+)$', str)}
     ...
     ...  def __init__(self, config):
-    ...    super(self.__class__, self).__init__(config)
+    ...    super(Router, self).__init__(config)
     ...
     >>>r = Router('hostname my-test-router')
     >>>r.hostname
@@ -180,7 +180,7 @@ class routerBGP(RegexStructure):
     }
 
     def __init__(self, config):
-        super(self.__class__, self).__init__(config)
+        super(routerBGP, self).__init__(config)
         self.neighbors = self._get_bgp_neighbors()
 
     def _get_bgp_neighbors(self):
@@ -213,7 +213,7 @@ class QoSClass(RegexStructure):
         }
 
     def __init__(self, config):
-        super(self.__class__, self).__init__(config)
+        super(QoSClass, self).__init__(config)
 
 
 class QoSPolicy(RegexStructure):
@@ -235,7 +235,7 @@ class QoSPolicy(RegexStructure):
     }
 
     def __init__(self, config):
-        super(self.__class__, self).__init__(config)
+        super(QoSPolicy, self).__init__(config)
         self.qos_bandwidth = self._find_total_qos_bandwidth()
         self.priority_class = self._find_priority_class()
         if not self.qos_bandwidth and hasattr(self.priority_class, 'bandwidth_percent'):
@@ -294,7 +294,7 @@ class Interface(RegexStructure):
         }
 
     def __init__(self, config):
-        super(self.__class__, self).__init__(config)
+        super(Interface, self).__init__(config)
         self.parent = ''
         self._load_interface_details()    # (self)?
 
@@ -334,7 +334,7 @@ class Router(RegexStructure):
         }
 
     def __init__(self, config):
-        super(self.__class__, self).__init__(config)
+        super(Router, self).__init__(config)
         self._set_parent_interfaces()
 
     def _set_parent_interfaces(self):
@@ -375,7 +375,7 @@ class MPLSRouter(Router):
     _single_attributes.update(Router._single_attributes)
 
     def __init__(self, config):
-        super(Router, self).__init__(config)
+        super(MPLSRouter, self).__init__(config)
         self.wan = self._get_wan_interface()
 
     def _get_wan_interface(self):
