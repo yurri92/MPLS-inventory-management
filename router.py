@@ -58,9 +58,14 @@ def search_all(regex, thing):
 
 def search_configlets(key, config, delimiter='!'):
     """Search a config and return a list of configlets that starts with the key.
-        key should be a string, e.g. 'interface'
-        config should be a list of lines or a string that can be split in multiple lines
-        configlet start with the key, lines are added untill the delimiter or the key is found"""
+
+        - key should be a string, e.g. 'interface'
+        - config should be a list of lines or a string that can be split in multiple lines
+
+        The configlet starts with the key, lines are added untill the delimiter or the key is found
+        Todo:
+        - stop when the indentation stops
+    """
     result = []
     if isinstance(config, str):
         config = config.splitlines
@@ -73,7 +78,7 @@ def search_configlets(key, config, delimiter='!'):
         elif search('^\s*('+key+')', line) and track is True:
             result.append(configlet)
             configlet = []
-            track = False
+            configlet.append(line)
         elif search('^\s*('+delimiter+')', line) and track is True:
             result.append(configlet)
             configlet = []
@@ -91,7 +96,7 @@ class RegexStructure(object):
     Example:
     >>>class Router(RegexStructure):
     ...
-    ...  _attributes = {'hostname': (r'^hostname\s+(\S+)$', str)}
+    ...  _single_attributes = {'hostname': (r'^hostname\s+(\S+)$', str)}
     ...
     ...  def __init__(self, config):
     ...    super(self.__class__, self).__init__(config)
@@ -101,7 +106,7 @@ class RegexStructure(object):
     'my-test-router'
     >>>
 
-    The keys in the dictionary _attributes are the attribute names.
+    The keys in the dictionary _single_attributes are the attribute names.
     Each value in this dictionary is a tuple that defines the regex and type.
 
     The regex should contain one match group '()'. The search function converts the
@@ -123,64 +128,100 @@ class RegexStructure(object):
      - define object-list (interfaces etc.)
 
     """
-    _attributes = {}
-    _objects = {}
+    _single_attributes = {}
+    _children = {}
 
     def __init__(self, config):
         self.config = config
-        for name, (regex, result_type) in self._attributes.items():
-            result = search(regex, self.config)
-            if result:
-                result = result_type(result)
-            setattr(self, name, result)
+        for name, (regex, result_type) in self._single_attributes.items():
+            self._add_single_attribute(name, regex, result_type)
+        for name, (key, child_cls) in self._children.items():
+            self._add_children(name, key, child_cls)
 
-    def add_attributes(self, attributes):
-        """Add attributes from regexes to the object"""
-        for name, (regex, result_type) in attributes.items():
-            result = search(regex, self.config)
-            if result:
-                result = result_type(result)
-            setattr(self, name, result)
+    def _add_single_attribute(self, name, regex, result_type):
+        result = search(regex, self.config)
+        if result:
+            result = result_type(result)
+        setattr(self, name, result)
 
-    def add_objects(self, name, key, cls):
+    def _add_children(self, name, key, child_cls):
         result = []
-        if hasattr(cls, '_attributes'):
-            if 'name' in cls._attributes.keys():
+        if hasattr(child_cls, '_single_attributes'):
+            if 'name' in child_cls._single_attributes.keys():
                 result = {}
         configlets = search_configlets(key, self.config)
         for configlet in configlets:
-            obj = cls(configlet)
+            child = child_cls(configlet)
             if isinstance(result, dict):
-                result[obj.name] = obj
+                result[child.name] = child
             else:
-                result.append(obj)
+                result.append(child)
         setattr(self, name, result)
 
 
-class Router(RegexStructure):
-    """Class that analyses and stores the settings for a Router.
+class QoSClass(RegexStructure):
+    """Class that analyses and stores the settings for a QoS class.
 
+    Todo:
+    - bandwidth remaining ratio
+    -
 
-      Todo:
-       - also use interfaces that are not shut down
-       - constructor method, to create router from filename
-       - change router to config
     """
-    _attributes = {
-        'hostname': (r'^hostname\s+(\S+)$', str)
+    _single_attributes = {
+        'name':              (r'^\s*class\s(\S+)\s*$', str),
+        'bandwidth':         (r'^\s*(?:bandwidth|priority)\s+(\d+)\s*', int),
+        'bandwidth_percent': (r'^\s*(?:bandwidth|priority)\spercent\s+(\d+)\s*', int),
+        'police':            (r'^\s*(?:police|police\srate)\s(\d+)\s*',
+                              lambda x: int(x)/1000)
         }
 
     def __init__(self, config):
         super(self.__class__, self).__init__(config)
-        self.add_objects('interfaces', 'interface', Interface)
-        #self.interfaces = self._load_interfaces()
 
-    def _load_interfaces(self):
-        interfaces = {}
-        for configlet in search_configlets('interface', self.config):  # fix this
-            interface = Interface(configlet)
-            interfaces[interface.name] = interface
-        return interfaces
+
+class QoSPolicy(RegexStructure):
+    """Class that analyses and stores the settings for a QoS policy.
+
+    Todo:
+    -  bandwidth remaining ratio (ne-ceva-ams71-amh-eu, ne-ceva-ams71-amh-eu)
+    """
+    _single_attributes = {
+        'name':          (r'^\s*policy-map\s+(\S+)\s*$', str),
+        'description':   (r'^\s*description\s+(.+)$', str),
+        'sub_policy':    (r'^\s*service-policy\s+(\S+)\s*$', str),
+        'shaper':        (r'^\s*shape\s+average\s+(\d+)\s*',
+                          lambda x: int(x)/1000)
+        }
+
+    _children = {
+        'qos_classes': ('class', QoSClass)
+    }
+
+    def __init__(self, config):
+        super(self.__class__, self).__init__(config)
+        self.qos_bandwidth = self._find_total_qos_bandwidth()
+        self.priority_class = self._find_priority_class()
+        if not self.qos_bandwidth and hasattr(self.priority_class, 'bandwidth_percent'):
+            if self.priority_class.bandwidth_percent:
+                self.qos_bandwidth = self._find_total_bandwidth_percent()
+
+    def _find_priority_class(self):
+        pass
+
+    def _find_total_qos_bandwidth(self):
+        qos_bandwidth = 0
+        for class_name, qos_class in self.qos_classes.items():
+            if qos_class.bandwidth:
+                qos_bandwidth += qos_class.bandwidth
+        return qos_bandwidth
+
+    def _find_total_bandwidth_percent(self):
+        qos_bandwidth = 0
+        if self.ef.bandwidth_percent:
+            x1 = self.ef.bandwidth_percent
+            x2 = self.ef.police
+            qos_bandwidth = int(x2/(x1/100.00))
+        return qos_bandwidth
 
 
 class Interface(RegexStructure):
@@ -191,7 +232,7 @@ class Interface(RegexStructure):
       - secondary standby groups
       - vrf
     """
-    _attributes = {
+    _single_attributes = {
         'name':              (r'^interface\s(\S+)\s*.*$', str),
         'description':       (r'^\s*description\s+(.+)$', str),
         'ip':                (r'^\s*ip\saddress\s(\d+\.\d+\.\d+\.\d+\s+\d+\.\d+\.\d+\.\d+)\s*$',
@@ -229,4 +270,25 @@ class Interface(RegexStructure):
             vlan = search(regex, self.config)
         if vlan:
             self.vlan = int(vlan)
+
+
+class Router(RegexStructure):
+    """Class that analyses and stores the settings for a Router.
+
+
+      Todo:
+       - also use interfaces that are not shut down
+       - constructor method, to create router from filename
+       - change router to config
+    """
+    _single_attributes = {
+        'hostname': (r'^hostname\s+(\S+)$', str)
+        }
+    _children = {
+        'interfaces': ('interface', Interface),
+        'qos_policies': ('policy-map\s+\S+', QoSPolicy)
+        }
+
+    def __init__(self, config):
+        super(self.__class__, self).__init__(config)
 

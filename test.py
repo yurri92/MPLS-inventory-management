@@ -52,6 +52,41 @@ class TestRouter(unittest.TestCase):
         i = r.interfaces['GigabitEthernet0/1.101']
         self.assertEqual(str(ip), str(i.ip))
 
+    def test_qos_policy_names(self):
+        qos_policy_names = ['SAMPLE-QOS-IN',
+                            'SAMPLE-QOS-OUT',
+                            'SAMPLE-SHAPER-OUT']
+        r = Router(self.config)
+        qos_policies = r.qos_policies
+        self.assertItemsEqual(qos_policies.keys(), qos_policy_names)
+
+    def test_qos_policy_configlet(self):
+        configlet = [
+                    'policy-map SAMPLE-QOS-OUT\n',
+                    ' description QOS_OUTBOUND_POLICY\n',
+                    ' class mgmt_output\n',
+                    '  police 6000 6000 6000 conform-action set-dscp-transmit 0 exceed-action set-dscp-transmit 0 violate-action set-dscp-transmit 0\n',
+                    '  bandwidth 190\n',
+                    '  random-detect\n',
+                    ' class realtime_output\n',
+                    '  priority 6504 16000\n',
+                    '  police 6504000 16000 16000 conform-action transmit  exceed-action drop  violate-action drop \n',
+                    ' class gold_output\n',
+                    '  bandwidth 3635\n',
+                    '  random-detect dscp-based\n',
+                    ' class silver_output\n',
+                    '  bandwidth 3635\n',
+                    '  random-detect dscp-based\n',
+                    ' class bronze_output\n',
+                    '  bandwidth 3635\n',
+                    '  random-detect dscp-based\n',
+                    ' class class-default\n',
+                    '  bandwidth 1211\n',
+                    '  random-detect\n']
+        r = Router(self.config)
+        q = r.qos_policies['SAMPLE-QOS-OUT']
+        self.assertSequenceEqual(q.config, configlet)
+
 
 if __name__ == '__main__':
     unittest.main()
