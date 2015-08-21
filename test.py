@@ -115,7 +115,13 @@ class TestRouter(unittest.TestCase):
     def test_priority_class(self):
         priority_class = 'realtime_output'
         q = self.r.qos_policies['SAMPLE-QOS-OUT']
-        self.assertEqual(priority_class, q.priority_class.name)        
+        self.assertEqual(priority_class, q.priority_class.name)
+
+
+class TestMPLSRouter(object):
+    """testclass for the MPLS router"""
+    def __init__(self, arg):
+        super(TestMPLSRouter, self).__init__()         
 
 
 if __name__ == '__main__':
