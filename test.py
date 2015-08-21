@@ -162,7 +162,7 @@ class TestMPLSRouter(unittest.TestCase):
 
     def test_wan_interface(self):
         wan_interface = 'GigabitEthernet0/1.101'
-        self.assertEqual(wan_interface, self.wan.name)
+        self.assertEqual(wan_interface, self.r.wan.name)
 
 
 if __name__ == '__main__':

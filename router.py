@@ -357,6 +357,8 @@ class MPLSRouter(Router):
        - a speed
        - redundancy"""
 
+    service_provider_as_nrs = xrange(1, 64152)
+
     # example how to extend attributes
     _single_attributes = {
         'local_as': ('^\s*router\sbgp\s(\d+)\s*$', int)
@@ -365,7 +367,21 @@ class MPLSRouter(Router):
 
     def __init__(self, config):
         super(Router, self).__init__(config)
-        self.wan = self._find_wan_interface()
+        self.wan = self._get_wan_interface()
 
-    def _find_wan_interface(self):
-        pass
+    def _get_wan_interface(self):
+        wan = ''
+        bgp_wan_ip = self._bgp_wan_neighbor()
+        if bgp_wan_ip:
+            for name, interface in self.interfaces.items():
+                network = interface.ip
+                if network and (bgp_wan_ip in network):
+                    wan = interface
+        return wan
+
+    def _bgp_wan_neighbor(self):
+        bgp_wan_neighbor = ''
+        for neighbor, remote_as in self.bgp.neighbors:
+            if remote_as in self.service_provider_as_nrs:
+                bgp_wan_neighbor = neighbor
+        return bgp_wan_neighbor
