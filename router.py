@@ -344,11 +344,21 @@ class Router(RegexStructure):
         interfaces['ATM0.101'].parent = 'ATM0'
 
         Useful for finding QoS polices on parent interfaces
+        to-do:
+        - use full virtual interface
         """
         for name, interface in self.interfaces.items():
             parent = search(r'^\s*(\S+)\.\d+', name)
             if parent in self.interfaces.keys():
                 self.interfaces[name].parent = self.interfaces[parent]
+
+        for name1 in self.interfaces.keys():
+            if 'Virtual' in name1:
+                for name2, interface2 in self.interfaces.items():
+                    regex = r'^\s*encapsulation.* (Virtual)'
+                    if search(regex, interface2.config):
+                        self.interfaces[name1].parent = self.interface2
+                        break
 
     @classmethod
     def load(cls, filename, path=''):
@@ -377,6 +387,10 @@ class MPLSRouter(Router):
     def __init__(self, config):
         super(MPLSRouter, self).__init__(config)
         self.wan = self._get_wan_interface()
+        self._set_wan_bandwidths()
+        self.redundancy = ''
+        self.hsrp = ''
+        self.pair_with = ''
 
     def _get_wan_interface(self):
         wan = ''
@@ -394,3 +408,6 @@ class MPLSRouter(Router):
             if remote_as in self.service_provider_as_nrs:
                 bgp_wan_neighbor = neighbor
         return bgp_wan_neighbor
+
+    def _set_wan_bandwidths(self):
+        pass
