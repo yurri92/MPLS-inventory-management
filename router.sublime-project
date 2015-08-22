@@ -12,6 +12,9 @@
 	[
 		{
 			"path": "."
+		},
+		{
+			"path": "/Users/yurri/Dropbox/hobonetworks/scripts/parseconfig"
 		}
 	]
 }
