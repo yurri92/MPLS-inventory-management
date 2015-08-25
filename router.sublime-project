@@ -13,7 +13,13 @@
 		{
 			"path": "."
 		},
+
 		{
+			"name": "Wi7 parseconfig",
+			"path": "C:\\Users\\607888087\\Dropbox\\hobonetworks\\scripts\\parseconfig"
+		},
+		{
+			"name": "OSX parseconfig",
 			"path": "/Users/yurri/Dropbox/hobonetworks/scripts/parseconfig"
 		}
 	]

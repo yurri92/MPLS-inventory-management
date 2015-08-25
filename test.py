@@ -163,6 +163,14 @@ class TestMPLSRouter(unittest.TestCase):
         wan_interface = 'GigabitEthernet0/1.101'
         self.assertEqual(wan_interface, self.r.wan.name)
 
+    def test_router_shaper(self):
+        router_shaper = 19800
+        self.assertEqual(router_shaper, self.r.shaper)
+
+    def test_router_qos_bandwidth(self):
+        pass
+        # continue here
+
 
 if __name__ == '__main__':
     unittest.main()

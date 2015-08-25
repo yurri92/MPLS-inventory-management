@@ -91,6 +91,15 @@ def search_configlets(key, config, delimiter='!'):
     return result
 
 
+def assign_attr_if_better(attr, obj1, obj2):
+    """assign an attribute if from obj1 to obj2 if the attr has a value
+    on obj1, and still has no value on obj2"""
+    value_obj1 = getattr(obj1, attr, None)
+    value_obj2 = getattr(obj2, attr, None)
+    if value_obj1 and not value_obj2:
+        setattr(obj2, attr, value_obj1)
+
+
 class RegexStructure(object):
     """Create attributes by applying a regex search on a config.
 
@@ -288,8 +297,6 @@ class Interface(RegexStructure):
         'atm_bandwidth':     (r'^\s*(?:cbr|vbr-nrt)\s+(\d+)\s*', int),
         'rate_limit':        (r'^\s*rate-limit\s+output\s+(\d+)\s',
                               lambda x: int(x)/1000),
-        'description_speed': (r'^\s*description\s+.+[S|s]peed:(\d+).+$', int),
-        'description_oid':   (r'^\s*description\s+.+SR:(\d+).+$', str),
         'crypto':            (r'^\s*(crypto.+)$', str)
         }
 
@@ -384,10 +391,14 @@ class MPLSRouter(Router):
         }
     _single_attributes.update(Router._single_attributes)
 
+    # attributes that will be inherited from the wan interface to the router
+    _wan_int_attributes = ['atm_bandwidth', 'admin_bandwidth', 'rate_limit']
+    _wan_qos_attributes = ['shaper', 'qos_bandwidth']
+
     def __init__(self, config):
         super(MPLSRouter, self).__init__(config)
         self.wan = self._get_wan_interface()
-        self._set_wan_bandwidths()
+        self._set_wan_attributes()
         self.redundancy = ''
         self.hsrp = ''
         self.pair_with = ''
@@ -409,5 +420,24 @@ class MPLSRouter(Router):
                 bgp_wan_neighbor = neighbor
         return bgp_wan_neighbor
 
-    def _set_wan_bandwidths(self):
-        pass
+    def _set_wan_attributes(self):
+        for attribute in self._wan_int_attributes + self._wan_qos_attributes:
+            setattr(self, attribute, 0)
+
+        interface = self.wan
+        while interface:
+            if interface.policy_out:
+                qos_policy = self.qos_policies[interface.policy_out]
+                assign_attr_if_better('shaper', qos_policy, self)
+                if qos_policy.sub_policy:
+                    qos_policy = self.qos_policies[qos_policy.sub_policy]
+                assign_attr_if_better('qos_bandwidth', qos_policy, self)
+            for attribute in self._wan_int_attributes:
+                assign_attr_if_better(attribute, interface, self)
+            interface = interface.parent
+
+        # improve: make configurable items more important than descriptive items
+        # or if descriptive item is within range of configurable items
+        self.bandwidth = max(self.shaper, self.qos_bandwidth, self.atm_bandwidth,
+                             self.admin_bandwidth, self.rate_limit)
+
