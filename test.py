@@ -168,8 +168,12 @@ class TestMPLSRouter(unittest.TestCase):
         self.assertEqual(router_shaper, self.r.shaper)
 
     def test_router_qos_bandwidth(self):
-        pass
-        # continue here
+        router_qos_bandwidth = 18810
+        self.assertEqual(router_qos_bandwidth, self.r.qos_bandwidth)
+
+    def test_router_bandwidth(self):
+        router_bandwidth = 19800
+        self.assertEqual(router_bandwidth, self.r.bandwidth)
 
 
 if __name__ == '__main__':
