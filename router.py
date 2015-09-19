@@ -91,13 +91,13 @@ def search_configlets(key, config, delimiter='!'):
     return result
 
 
-def assign_attr_if_better(attr, obj1, obj2):
+def assign_attr_if_better(attribute_name, obj1, obj2):
     """assign an attribute if from obj1 to obj2 if the attr has a value
     on obj1, and still has no value on obj2"""
-    value_obj1 = getattr(obj1, attr, None)
-    value_obj2 = getattr(obj2, attr, None)
-    if value_obj1 and not value_obj2:
-        setattr(obj2, attr, value_obj1)
+    attribute_obj1 = getattr(obj1, attribute_name, None)
+    attribute_obj2 = getattr(obj2, attribute_name, None)
+    if attribute_obj1 and not attribute_obj2:
+        setattr(obj2, attribute_name, attribute_obj1)
 
 
 class RegexStructure(object):
@@ -229,7 +229,7 @@ class QoSPolicy(RegexStructure):
     """Class that analyses and stores the settings for a QoS policy.
 
     Todo:
-    -  bandwidth remaining ratio (ne-ceva-ams71-amh-eu, ne-ceva-ams71-amh-eu)
+    -  bandwidth remaining ratio
     """
     _single_attributes = {
         'name':          (r'^\s*policy-map\s+(\S+)\s*$', str),
@@ -248,8 +248,7 @@ class QoSPolicy(RegexStructure):
         self.qos_bandwidth = self._find_total_qos_bandwidth()
         self.priority_class = self._find_priority_class()
         if not self.qos_bandwidth and hasattr(self.priority_class, 'bandwidth_percent'):
-            if self.priority_class.bandwidth_percent:
-                self.qos_bandwidth = self._find_total_bandwidth_percent()
+            self.qos_bandwidth = self._find_total_bandwidth_percent()
 
     def _find_priority_class(self):
         result = ''
@@ -267,9 +266,9 @@ class QoSPolicy(RegexStructure):
 
     def _find_total_bandwidth_percent(self):
         qos_bandwidth = 0
-        if self.ef.bandwidth_percent:
-            x1 = self.ef.bandwidth_percent
-            x2 = self.ef.police
+        if self.priority_class.bandwidth_percent:
+            x1 = self.priority_class.bandwidth_percent
+            x2 = self.priority_class.police
             qos_bandwidth = int(x2/(x1/100.00))
         return qos_bandwidth
 
@@ -283,21 +282,24 @@ class Interface(RegexStructure):
       - vrf
     """
     _single_attributes = {
-        'name':              (r'^interface\s(\S+)\s*.*$', str),
-        'description':       (r'^\s*description\s+(.+)$', str),
-        'ip':                (r'^\s*ip\saddress\s(\d+\.\d+\.\d+\.\d+\s+\d+\.\d+\.\d+\.\d+)\s*$',
-                              lambda ip: IPv4Network(re.sub(r'\s+', '/', ip))),
-        'ip_unnumbered':     (r'^\s*ip\s+unnumbered\s+(\S+)\s*$', str),
-        'ip_negotiated':     (r'^\s*ip\saddress\s(negotiated)\s*$', str),
-        'admin_bandwidth':   (r'^\s*bandwidth\s+(\d+)', int),
-        'hsrp':              (r'^\s*standby\s+\d+\s+ip\s+(\d+\.\d+\.\d+\.\d+)\s*$',
-                              IPv4Address),
-        'policy_in':         (r'^\s*service-policy\s+input\s+(\S+)\s*$', str),
-        'policy_out':        (r'^\s*service-policy\s+output\s+(\S+)\s*$', str),
-        'atm_bandwidth':     (r'^\s*(?:cbr|vbr-nrt)\s+(\d+)\s*', int),
-        'rate_limit':        (r'^\s*rate-limit\s+output\s+(\d+)\s',
-                              lambda x: int(x)/1000),
-        'crypto':            (r'^\s*(crypto.+)$', str)
+        'name':               (r'^interface\s(\S+)\s*.*$', str),
+        'description':        (r'^\s*description\s+(.+)$', str),
+        'ip':                 (r'^\s*ip\saddress\s(\d+\.\d+\.\d+\.\d+\s+\d+\.\d+\.\d+\.\d+)\s*$',
+                               lambda ip: IPv4Network(re.sub(r'\s+', '/', ip))),
+        'ip_unnumbered':      (r'^\s*ip\s+unnumbered\s+(\S+)\s*$', str),
+        'ip_negotiated':      (r'^\s*ip\saddress\s(negotiated)\s*$', str),
+        'admin_bandwidth':    (r'^\s*bandwidth\s+(\d+)', int),
+        'hsrp':               (r'^\s*standby\s+\d+\s+ip\s+(\d+\.\d+\.\d+\.\d+)\s*$',
+                               IPv4Address),
+        'policy_in':          (r'^\s*service-policy\s+input\s+(\S+)\s*$', str),
+        'policy_out':         (r'^\s*service-policy\s+output\s+(\S+)\s*$', str),
+        'atm_bandwidth':      (r'^\s*(?:cbr|vbr-nrt)\s+(\d+)\s*', int),
+        'rate_limit':         (r'^\s*rate-limit\s+output\s+(\d+)\s',
+                               lambda x: int(x)/1000),
+        'crypto':             (r'^\s*(crypto.+)$', str),
+        'dialer_pool':        (r'^\s*dialer\s+pool\s+(\d+)\s*$', int),
+        'dialer_pool_member': (r'^\s*dialer\s+pool-member\s+(\d+)\s*$', int),
+        'dial_pool_number':   (r'^\s*.+dial-pool-number\s+(\d+)\s*$', int)
         }
 
     def __init__(self, config):
@@ -359,12 +361,24 @@ class Router(RegexStructure):
             if parent in self.interfaces.keys():
                 self.interfaces[name].parent = self.interfaces[parent]
 
+        # find the parent interface for a ppp Virtual-Template
         for name1 in self.interfaces.keys():
-            if 'Virtual' in name1:
+            if 'Virtual-Template' in name1:
                 for name2, interface2 in self.interfaces.items():
-                    regex = r'^\s*encapsulation.* (Virtual)'
-                    if search(regex, interface2.config):
-                        self.interfaces[name1].parent = self.interface2
+                    regex = r'^\s*encapsulation.+ppp\s*(Virtual-Template\d+)'
+                    if name1 == search(regex, interface2.config):
+                        self.interfaces[name1].parent = interface2
+                        break
+
+        # find the parent interface for dialer interfaces
+        for name1, interface1 in self.interfaces.items():
+            if interface1.dialer_pool:
+                for interface2 in self.interfaces.values():
+                    if interface1.dialer_pool == interface2.dialer_pool_member:
+                        self.interfaces[name1].parent = interface2
+                        break
+                    elif interface1.dialer_pool == interface2.dial_pool_number:
+                        self.interfaces[name1].parent = interface2
                         break
 
     @classmethod
