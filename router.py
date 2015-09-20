@@ -181,7 +181,7 @@ class RegexStructure(object):
         setattr(self, name, result)
 
 
-class routerBGP(RegexStructure):
+class RouterBGP(RegexStructure):
     """Class that analyses and stores the settings for BGP configuration"""
 
     _single_attributes = {
@@ -189,7 +189,7 @@ class routerBGP(RegexStructure):
     }
 
     def __init__(self, config):
-        super(routerBGP, self).__init__(config)
+        super(RouterBGP, self).__init__(config)
         self.neighbors = self._get_bgp_neighbors()
 
     def _get_bgp_neighbors(self):
@@ -339,7 +339,7 @@ class Router(RegexStructure):
         'qos_policies': ('policy-map\s+\S+', QoSPolicy)
         }
     _single_children = {
-        'bgp': ('router bgp\s+\d+', routerBGP)
+        'bgp': ('router bgp\s+\d+', RouterBGP)
         }
 
     def __init__(self, config):
