@@ -406,6 +406,7 @@ class MPLSRouter(Router):
     _single_attributes.update(Router._single_attributes)
 
     # attributes that will be inherited from the wan interface to the router
+    # improve the utilisation of qos attributes
     _wan_int_attributes = ['atm_bandwidth', 'admin_bandwidth', 'rate_limit']
     _wan_qos_attributes = ['shaper', 'qos_bandwidth']
 
@@ -445,7 +446,8 @@ class MPLSRouter(Router):
                 assign_attr_if_better('shaper', qos_policy, self)
                 if qos_policy.sub_policy:
                     qos_policy = self.qos_policies[qos_policy.sub_policy]
-                assign_attr_if_better('qos_bandwidth', qos_policy, self)
+                for attribute in self._wan_qos_attributes:
+                    assign_attr_if_better(attribute, qos_policy, self)
             for attribute in self._wan_int_attributes:
                 assign_attr_if_better(attribute, interface, self)
             interface = interface.parent
