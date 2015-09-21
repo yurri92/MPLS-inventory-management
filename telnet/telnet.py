@@ -1,3 +1,5 @@
+import os
+
 def load_telnet_file(path, ip):
     result = []
     filename = str(ip)+'.txt'
