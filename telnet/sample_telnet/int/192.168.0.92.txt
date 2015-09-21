@@ -1,0 +1,11 @@
+show ip int brie
+Interface                  IP-Address      OK? Method Status                Protocol
+GigabitEthernet0/0         unassigned      YES NVRAM  up                    up      
+GigabitEthernet0/0.100     10.0.10.2       YES NVRAM  up                    up        
+GigabitEthernet0/0.200     10.0.20.2       YES NVRAM  up                    up      
+GigabitEthernet0/0.300     10.0.30.2       YES NVRAM  up                    up      
+GigabitEthernet0/0.400     10.0.40.2       YES NVRAM  up                    up    
+GigabitEthernet0/1         unassigned      YES NVRAM  up                    up      
+GigabitEthernet0/1.101     192.168.100.2   YES NVRAM  up                    up      
+Loopback1                  192.168.0.92    YES NVRAM  up                    up      
+router-1-eth

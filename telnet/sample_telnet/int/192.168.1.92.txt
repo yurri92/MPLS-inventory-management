@@ -1,0 +1,20 @@
+show ip int brie
+Interface                  IP-Address      OK? Method Status                Protocol
+ATM0                       unassigned      YES NVRAM  up                    up      
+ATM0.1                     unassigned      YES unset  up                    up      
+Ethernet0                  unassigned      YES NVRAM  administratively down down    
+FastEthernet0              unassigned      YES unset  up                    up      
+FastEthernet1              unassigned      YES unset  administratively down down    
+FastEthernet2              unassigned      YES unset  administratively down down    
+FastEthernet3              unassigned      YES unset  administratively down down    
+Loopback1                  192.168.1.92    YES NVRAM  up                    up      
+Virtual-Access1            unassigned      YES unset  up                    up      
+Virtual-Access2            192.168.1.92    YES unset  up                    up      
+Virtual-Access3            unassigned      YES unset  up                    up      
+Virtual-Template1          192.168.1.92    YES unset  down                  down    
+Vlan1                      unassigned      YES unset  administratively down down    
+Vlan100                    10.1.10.2       YES NVRAM  up                    up      
+Vlan200                    10.1.20.2       YES NVRAM  up                    up      
+Vlan300                    10.1.30.2       YES NVRAM  up                    up      
+Vlan400                    10.1.40.2       YES NVRAM  up                    up      
+router-2-atm

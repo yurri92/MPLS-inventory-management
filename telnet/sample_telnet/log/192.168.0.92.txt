@@ -1,0 +1,23 @@
+{
+    "discoveries": [
+        {
+            "timestamp": "20150826131840", 
+            "hostname": "", 
+            "type": "ping", 
+            "result": "ok"
+        }, 
+        {
+            "timestamp": "20150826152022", 
+            "hostname": "router-1-eth", 
+            "type": "telnet", 
+            "result": "succes"
+        }, 
+        {
+            "timestamp": "20150831080457", 
+            "hostname": "router-1-eth", 
+            "type": "telnet", 
+            "result": "succes"
+        }
+    ], 
+    "loopback": "192.168.0.92"
+}

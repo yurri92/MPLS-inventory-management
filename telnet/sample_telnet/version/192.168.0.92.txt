@@ -1,0 +1,21 @@
+show version
+Cisco IOS Software, 2800 Software (C2800NM-SPSERVICESK9-M), Version 12.4(xxd), RELEASE SOFTWARE (fc1)
+Compiled Wed 22-Aug-09 08:40 by prod_rel_team
+
+ROM: System Bootstrap, Version 12.4(xxr)T11, RELEASE SOFTWARE (fc1)
+
+router-1-eth uptime is 1 year, 2 days, 27 minutes
+System returned to ROM by power-on
+System image file is "flash:c2800nm-spservicesk9-mz.124-xxd.bin"
+
+
+Cisco 2821 (revision 53.xx) with 514048K/10240K bytes of memory.
+Processor board ID FCZXXXXXXXX
+2 Gigabit Ethernet interfaces
+DRAM configuration is 64 bits wide with parity enabled.
+239K bytes of non-volatile configuration memory.
+126976K bytes of ATA CompactFlash (Read/Write)
+
+Configuration register is 0x2102
+
+router-1-eth
