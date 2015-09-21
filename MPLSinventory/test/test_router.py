@@ -6,7 +6,7 @@ from ipaddr import IPv4Network, IPv4Address
 
 print sys.version
 
-PATH = 'sampleconfigs'
+PATH = os.path.join('test', 'sample_configs')
 FILENAME_ETH = 'router_1_eth_conf.cfg'
 FILENAME_ATM = 'router_2_atm_conf.cfg'
 
