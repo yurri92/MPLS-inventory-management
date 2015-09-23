@@ -1,28 +1,49 @@
 import os
 from regexstructure import RegexStructure, search, search_all
+from ipaddr import IPv4Network, IPv4Address
+
+class ParseShowCommand(RegexStructure):
+    """Class that analyses and stores the out put of 'show'commands on a Cisco device"""
+    _showcommand = ''
+
+    def __init__(self, config):
+        super(ParseShowCommand, self).__init__(config)
+
+    # get hostname from last line
+    # load config based on ip only
+    # version -> telnet/version/ip.txt
+
+    @classmethod
+    def load(cls, ip, path=''):
+        filename = str(ip) + '.txt'
+        path = os.path.join(path, cls._showcommand)
+        # super(ParseShowCommand, cls).load(filename, path)
+        # print super(ParseShowCommand, cls)     # <super: <class 'ParseShowCommand'>, <ShowVersion object>>
+        # super(ParseShowCommand).load(filename, path)
+
+        path = os.path.join(path, filename)
+        config = ''
+        if os.path.isfile(path):
+            with open(path, 'r') as fp:
+                config = fp.readlines()
+        return cls(config)
 
 
-def load_telnet_file(path, ip):
-    result = []
-    filename = str(ip)+'.txt'
-    path = os.path.join('telnet', path, filename)
-    if os.path.isfile(path):
-        with open(path, 'r') as fp:
-            result = fp.readlines()
-    return result
 
+class ShowVersion(ParseShowCommand):
+    """Class that analyses and stores the settings of 'show version' on a Cisco device"""
+    
+    _showcommand = 'version'
 
-def parse_show_version(ip):
-    model = ''
-    hostname = ''
-    text = load_telnet_file('version', ip)
-    if text:
-        regex = r'^\s*.isco\s+(\S+).+memory\.\s*$'
-        model = search(regex, text)
-        hostname = text[-1]
-    return {'model': model, 'hostname': hostname}
+    _single_attributes = {
+        'model': (r'^\s*.isco\s+(\S+).+memory\.\s*$', str),
+        'hostname': (r'^\s*(\S+)\s+uptime', str)
+    }
 
+    def __init__(self, config):
+        super(ShowVersion, self).__init__(config)
 
+    
 def parse_show_interface_status(ip):
     interfaces = []
     hostname = ''

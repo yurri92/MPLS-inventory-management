@@ -1,22 +1,25 @@
-# import unittest
-# from telnet import ShowVersion
-print ' no telnet test'
+import unittest
+import os
+from telnet import ShowVersion
+# print ' no telnet test'
 
-# TELNET_TEST_DIR = 'sample_telnet'
+PATH = os.path.join('test', 'sample_telnet')
+TELNET_TEST_DIR = 'sample_telnet'
+IP1 = '192.168.0.92'
+IP2 = '192.168.1.92'
 
+class TestParseShowVersion(unittest.TestCase):
+    show_version = None
 
-# class TestParseShowVersion(unittest.TestCase):
-#     show_version = None
+    @classmethod
+    def setUpClass(cls):
+        cls.sv1 = ShowVersion.load(IP1, PATH)
+        cls.sv2 = ShowVersion.load(IP2, PATH)
 
-#     @classmethod
-#     def setUpClass(cls):
-#         cls.sv1 = ShowVersion.load(FILENAME_ETH, PATH)
+    def test_parse_show_version_model1(self):
+        model = '2821'
+        self.assertEqual(model, self.sv1.model)
 
-# def test_parse_show_version_model(self):
-#        model = '2821'
-#        show_version = parse_show_version(self.r.mgmt_ip)
-#        self.assertEqual(model, show_version['model'])
-#    def test_parse_show_version_hostname(self):
-#        hostname = 'tbd'
-#        show_version = parse_show_version(self.r.mgmt_ip)
-#        self.assertEqual(hostname, show_version['hostname'])
+    def test_parse_show_version_hostname1(self):
+        hostname = 'router-1-eth'
+        self.assertEqual(hostname, self.sv1.hostname)

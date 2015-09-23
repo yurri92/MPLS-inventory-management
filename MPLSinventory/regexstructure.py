@@ -93,7 +93,7 @@ def search_configlets(key, config, delimiter='!'):
 # move to tools section
 def assign_attr_if_better(attribute_name, obj1, obj2):
     """assign an attribute if from obj1 to obj2 if the attr has a value
-    on obj1, and still has no value on obj2"""
+    on obj1, and still has no valueon obj2"""
     attribute_obj1 = getattr(obj1, attribute_name, None)
     attribute_obj2 = getattr(obj2, attribute_name, None)
     if attribute_obj1 and not attribute_obj2:
@@ -183,7 +183,8 @@ class RegexStructure(object):
     @classmethod
     def load(cls, filename, path=''):
         path = os.path.join(path, filename)
-        file = open(path, 'rb')
-        config = file.readlines()
-        file.close
+        config = ''
+        if os.path.isfile(path):
+            with open(path, 'r') as fp:
+                config = fp.readlines()
         return cls(config)
