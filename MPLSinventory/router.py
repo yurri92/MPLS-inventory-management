@@ -2,7 +2,7 @@ import re
 import os
 from ipaddr import IPv4Network, IPv4Address
 from regexstructure import search, search_all, RegexStructure
-from regexstructure import assign_attr_if_better   # should move to tools 
+from regexstructure import assign_attr_if_better   # should move to tools
 
 
 class RouterBGP(RegexStructure):
@@ -205,13 +205,13 @@ class Router(RegexStructure):
                         self.interfaces[name1].parent = interface2
                         break
 
-    @classmethod
-    def load(cls, filename, path=''):
-        path = os.path.join(path, filename)
-        file = open(path, 'rb')
-        config = file.readlines()
-        file.close
-        return cls(config)
+    # @classmethod
+    # def load(cls, filename, path=''):
+    #     path = os.path.join(path, filename)
+    #     file = open(path, 'rb')
+    #     config = file.readlines()
+    #     file.close
+    #     return cls(config)
 
 
 class MPLSRouter(Router):

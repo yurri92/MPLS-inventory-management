@@ -1,4 +1,5 @@
 import re
+import os
 
 COMPILED_REGEXES = {}
 
@@ -89,6 +90,7 @@ def search_configlets(key, config, delimiter='!'):
     return result
 
 
+# move to tools section
 def assign_attr_if_better(attribute_name, obj1, obj2):
     """assign an attribute if from obj1 to obj2 if the attr has a value
     on obj1, and still has no value on obj2"""
@@ -177,3 +179,11 @@ class RegexStructure(object):
         if configlets:
             result = result_type(configlets[0])
         setattr(self, name, result)
+
+    @classmethod
+    def load(cls, filename, path=''):
+        path = os.path.join(path, filename)
+        file = open(path, 'rb')
+        config = file.readlines()
+        file.close
+        return cls(config)

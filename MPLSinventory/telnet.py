@@ -1,4 +1,6 @@
 import os
+from regexstructure import RegexStructure, search, search_all
+
 
 def load_telnet_file(path, ip):
     result = []
