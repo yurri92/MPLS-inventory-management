@@ -2,6 +2,7 @@ import os
 from regexstructure import RegexStructure, search, search_all
 from ipaddr import IPv4Network, IPv4Address
 
+
 class ParseShowCommand(RegexStructure):
     """Class that analyses and stores the out put of 'show'commands on a Cisco device"""
     _showcommand = ''
@@ -17,22 +18,12 @@ class ParseShowCommand(RegexStructure):
     def load(cls, ip, path=''):
         filename = str(ip) + '.txt'
         path = os.path.join(path, cls._showcommand)
-        # super(ParseShowCommand, cls).load(filename, path)
-        # print super(ParseShowCommand, cls)     # <super: <class 'ParseShowCommand'>, <ShowVersion object>>
-        # super(ParseShowCommand).load(filename, path)
-
-        path = os.path.join(path, filename)
-        config = ''
-        if os.path.isfile(path):
-            with open(path, 'r') as fp:
-                config = fp.readlines()
-        return cls(config)
-
+        return super(ParseShowCommand, cls).load(filename, path)
 
 
 class ShowVersion(ParseShowCommand):
     """Class that analyses and stores the settings of 'show version' on a Cisco device"""
-    
+
     _showcommand = 'version'
 
     _single_attributes = {
