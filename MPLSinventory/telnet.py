@@ -16,8 +16,11 @@ class ParseShowCommand(RegexStructure):
 
     @classmethod
     def load(cls, ip, path=''):
-        filename = str(ip) + '.txt'
-        path = os.path.join(path, cls._showcommand)
+        filename = str(ip)
+        if not filename.endswith('.txt'):
+            filename = filename + '.txt'
+        if not path.endswith(cls._showcommand):
+            path = os.path.join(path, cls._showcommand)
         return super(ParseShowCommand, cls).load(filename, path)
 
 
@@ -55,4 +58,3 @@ class ShowIPInterfacesBrief(ParseShowCommand):
             elif 'up' in status:
                 status = 'up'
             self.interfaces[interface] = status
-
