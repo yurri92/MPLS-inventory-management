@@ -34,20 +34,25 @@ class ShowVersion(ParseShowCommand):
     def __init__(self, config):
         super(ShowVersion, self).__init__(config)
 
-    
-def parse_show_interface_status(ip):
-    interfaces = []
-    hostname = ''
-    regex = r'^\s*(\S+)\s+\S+\s+(?:YES|NO)\s+\S+(.+)$'
-    text = load_telnet_file('int', ip)
-    if text:
-        for interface, status in search_all(regex, text):
+
+class ShowIPInterfacesBrief(ParseShowCommand):
+    """Class that analyses and stores the ouput of 'show ip interfaces brief' on a Cisco device"""
+
+    _showcommand = 'int'
+
+    def __init__(self, config):
+        super(ShowIPInterfacesBrief, self).__init__(config)
+        self._set_interface_status()
+
+    def _set_interface_status(self):
+        self.interfaces = {}
+        regex = r'^\s*(\S+)\s+\S+\s+(?:YES|NO)\s+\S+(.+)$'
+        for interface, status in search_all(regex, self.config):
             if 'admin' in status:
                 status = 'admin_shut'
             elif 'down' in status:
                 status = 'down'
             elif 'up' in status:
                 status = 'up'
-            interfaces.append((interface, status))
-        hostname = text[-1]
-    return {'interfaces': interfaces, 'hostname': hostname}
+            self.interfaces[interface] = status
+
