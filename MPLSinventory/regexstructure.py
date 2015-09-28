@@ -1,59 +1,5 @@
-import re
 import os
-
-COMPILED_REGEXES = {}
-
-
-def search(regex, thing):
-    """ Regex search anything.
-
-     Determine what class the thing is and convert that to a string or list of strings
-     returns the results for the first occurance in the list of strings
-     the result are the subgroups for the regex match
-     - if the regex has a single capture group a single item is returned
-     - if the regex has multiple capture groups, a tuple is returned with all subgroups
-    """
-    result = ()
-    if isinstance(thing, list):
-        for item in thing:
-            result = search(regex, item)
-            if result:
-                break
-
-    if isinstance(thing, str):
-        if regex not in COMPILED_REGEXES.keys():
-            COMPILED_REGEXES[regex] = re.compile(regex)
-        compiled_regex = COMPILED_REGEXES[regex]
-        n = compiled_regex.groups       # number of capture groups requested
-        result = tuple(n * [''])        # create tuple of empty strings
-        match = re.search(compiled_regex, thing)
-        if match:
-            result = match.groups('')
-        if len(result) == 1:
-            result = result[0]
-    return result
-
-
-def search_all(regex, thing):
-    """ Regex search all lines in anything.
-
-    determines what class the thing is and converts that to a list of things
-    each item or line in the list is searched using the regex and search(regex, thing)
-    if the item has a match, the results are added to a list
-    """
-    result = []
-    if isinstance(thing, str):
-        thing = thing.splitlines()
-    if isinstance(thing, list):
-        for item in thing:
-            r = search(regex, item)
-            if isinstance(r, str):
-                if r:
-                    result += [r]
-            if isinstance(r, tuple):
-                if reduce(lambda x, y: bool(x) or bool(y), r):   # test if tuple has results
-                    result += [r]
-    return result
+from tools import search
 
 
 def search_configlets(key, config, delimiter='!'):
@@ -88,16 +34,6 @@ def search_configlets(key, config, delimiter='!'):
     if configlet:
         result.append(configlet)
     return result
-
-
-# move to tools section
-def assign_attr_if_better(attribute_name, obj1, obj2):
-    """assign an attribute if from obj1 to obj2 if the attr has a value
-    on obj1, and still has no valueon obj2"""
-    attribute_obj1 = getattr(obj1, attribute_name, None)
-    attribute_obj2 = getattr(obj2, attribute_name, None)
-    if attribute_obj1 and not attribute_obj2:
-        setattr(obj2, attribute_name, attribute_obj1)
 
 
 class RegexStructure(object):
@@ -143,6 +79,7 @@ class RegexStructure(object):
     _single_attributes = {}
     _multiple_children = {}
     _single_children = {}
+    _json_simplify = []
 
     def __init__(self, config):
         self.config = config
@@ -179,6 +116,31 @@ class RegexStructure(object):
         if configlets:
             result = result_type(configlets[0])
         setattr(self, name, result)
+
+    def json(self):
+        r = {k: self._make_json(v) for k, v in self.__dict__.items() if k != 'config'}
+        for key in self._json_simplify:
+            if key in r.keys() and r[key]:
+                r[key] = r[key]['name']
+        return r
+
+    def _make_json(self, obj):
+        if isinstance(obj, list):
+            return [self._make_json(item) for item in obj]
+        if isinstance(obj, tuple):
+            return tuple([self._make_json(item) for item in obj])
+        elif isinstance(obj, dict):
+            return {k: self._make_json(v) for k, v in obj.items()}
+        elif isinstance(obj, str) or isinstance(obj, unicode):
+            return obj
+        elif isinstance(obj, int) or isinstance(obj, float):
+            return obj
+        elif hasattr(obj, 'json'):
+            return obj.json()
+        elif hasattr(obj, '__str__'):
+            return str(obj)
+        else:
+            return obj
 
     @classmethod
     def load(cls, filename, path=''):

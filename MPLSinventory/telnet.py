@@ -1,6 +1,6 @@
 import os
-from regexstructure import RegexStructure, search, search_all
-from ipaddr import IPv4Network, IPv4Address
+from regexstructure import RegexStructure
+from tools import search_all
 
 
 class ParseShowCommand(RegexStructure):
@@ -21,7 +21,9 @@ class ParseShowCommand(RegexStructure):
             filename = filename + '.txt'
         if not path.endswith(cls._showcommand):
             path = os.path.join(path, cls._showcommand)
-        return super(ParseShowCommand, cls).load(filename, path)
+        result = super(ParseShowCommand, cls).load(filename, path)
+        result.ip = filename[:-4]
+        return result
 
 
 class ShowVersion(ParseShowCommand):
@@ -46,6 +48,7 @@ class ShowIPInterfacesBrief(ParseShowCommand):
     def __init__(self, config):
         super(ShowIPInterfacesBrief, self).__init__(config)
         self._set_interface_status()
+        self.hostname = self.config[-1]
 
     def _set_interface_status(self):
         self.interfaces = {}
@@ -58,3 +61,4 @@ class ShowIPInterfacesBrief(ParseShowCommand):
             elif 'up' in status:
                 status = 'up'
             self.interfaces[interface] = status
+ 

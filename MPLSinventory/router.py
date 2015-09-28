@@ -1,8 +1,7 @@
 import re
-import os
 from ipaddr import IPv4Network, IPv4Address
-from regexstructure import search, search_all, RegexStructure
-from regexstructure import assign_attr_if_better   # should move to tools
+from regexstructure import RegexStructure
+from tools import search, search_all, assign_attr_if_better
 
 
 class RouterBGP(RegexStructure):
@@ -126,6 +125,8 @@ class Interface(RegexStructure):
         'dial_pool_number':   (r'^\s*.+dial-pool-number\s+(\d+)\s*$', int)
         }
 
+    _json_simplify = ['parent']
+
     def __init__(self, config):
         super(Interface, self).__init__(config)
         self.parent = ''
@@ -205,14 +206,6 @@ class Router(RegexStructure):
                         self.interfaces[name1].parent = interface2
                         break
 
-    # @classmethod
-    # def load(cls, filename, path=''):
-    #     path = os.path.join(path, filename)
-    #     file = open(path, 'rb')
-    #     config = file.readlines()
-    #     file.close
-    #     return cls(config)
-
 
 class MPLSRouter(Router):
     """Analysis and stores the settings of a MPLS Router
@@ -233,6 +226,8 @@ class MPLSRouter(Router):
     # improve the utilisation of qos attributes
     _wan_int_attributes = ['atm_bandwidth', 'admin_bandwidth', 'rate_limit']
     _wan_qos_attributes = ['shaper', 'qos_bandwidth']
+
+    _json_simplify = ['wan']
 
     def __init__(self, config):
         super(MPLSRouter, self).__init__(config)
