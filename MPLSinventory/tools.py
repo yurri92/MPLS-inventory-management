@@ -89,7 +89,6 @@ def getattr_recursive(obj, name):
 
     # split the name into a queue of keywords
     name_queue = []
-    result = obj
     while name:
         if name[0] == '.':
             name = name[1:]
@@ -106,6 +105,8 @@ def getattr_recursive(obj, name):
             name = remainder
             name_queue.append(int(index))
 
+    # retrieve the keywords from the object.
+    result = obj
     while name_queue and result:
         if isinstance(result, list):
             index = name_queue.pop(0)
@@ -186,7 +187,7 @@ def copy_json_object(json_object1, json_object2, attributes=None, key_prepend=''
     - prepend the keys with key_prepend
     """
     if attributes is None:
-        attributes = json_object1.keys()
+        attributes = json_object2.keys()
     for attribute in attributes:
         json_object1[key_prepend + attribute] = json_object2[attribute]
 
@@ -212,7 +213,7 @@ def match_telnet_to_router(router_json_object, telnet_dict):
     """match if loopback and hostname of the router correspend to the telnet_dict"""
     router_ip = router_json_object["interfaces['Loopback1'].ip.ip"]
     router_hostname = router_json_object["hostname"]
-    for telnet_json_object in telnet_dict:
+    for telnet_json_object in telnet_dict.values():
         telnet_ip = telnet_json_object['ip']
         telnet_hostname = telnet_json_object['hostname']
         if router_ip == telnet_ip and router_hostname == telnet_hostname:
@@ -222,7 +223,7 @@ def match_telnet_to_router(router_json_object, telnet_dict):
 
 def match_show_commands(showversion_json_object, showint_dict):
     showversion_ip = showversion_json_object['ip']
-    for showint_json_object in showint_dict:
+    for showint_json_object in showint_dict.values():
         if showversion_ip == showint_json_object['ip']:
             return showint_json_object
     return None
