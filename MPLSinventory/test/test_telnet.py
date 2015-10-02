@@ -43,7 +43,7 @@ class TestParseShowVersion(unittest.TestCase):
              'GigabitEthernet0/1': 'up',
              'GigabitEthernet0/1.101': 'up',
              'Loopback1': 'up'}
-        self.assertItemsEqual(r, self.si1.interfaces)
+        self.assertItemsEqual(r, self.si1.interface_status)
 
     def test_parse_show_ip_interfaces_brief_r2(self):
         r = {'ATM0': 'up',
@@ -63,4 +63,4 @@ class TestParseShowVersion(unittest.TestCase):
              'Vlan200': 'up',
              'Vlan300': 'up',
              'Vlan400': 'up'}
-        self.assertItemsEqual(r, self.si2.interfaces)
+        self.assertItemsEqual(r, self.si2.interface_status)

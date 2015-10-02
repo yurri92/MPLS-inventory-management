@@ -84,6 +84,7 @@ def getattr_recursive(obj, name):
     """Gets attributes from objects recursively.
 
     'name' can contain multiple attributes
+    'todo': lists and dicts
 
     """
 
@@ -191,7 +192,6 @@ def copy_json_object(json_object1, json_object2, attributes=None, key_prepend=''
     for attribute in attributes:
         json_object1[key_prepend + attribute] = json_object2[attribute]
 
-
 def combine(dict1, dict2, match_function, key_prepend=''):
     """combine the json_objects in dict1 with dict2
     - match_function(json_object, dict2) will return the best matching json_object from dict2
@@ -205,7 +205,6 @@ def combine(dict1, dict2, match_function, key_prepend=''):
         if not json_object2:
             json_object2 = empty_json_object2
         copy_json_object(json_object1, json_object2, key_prepend=key_prepend)
-        # HOLD continue here
 
 
 # move to match_rules.py
@@ -222,9 +221,9 @@ def match_telnet_to_router(router_json_object, telnet_dict):
 
 
 def match_show_commands(showversion_json_object, showint_dict):
-    showversion_ip = showversion_json_object['ip']
     for showint_json_object in showint_dict.values():
-        if showversion_ip == showint_json_object['ip']:
-            return showint_json_object
+        if showversion_json_object['ip'] == showint_json_object['ip']:
+            if showversion_json_object['hostname'] == showint_json_object['hostname']:
+                return showint_json_object
     return None
 
