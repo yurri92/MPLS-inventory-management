@@ -70,7 +70,20 @@ class ParseShowCommand(RegexStructure):
 
 
 class ShowVersion(ParseShowCommand):
-    """Class that analyses and stores the settings of 'show version' on a Cisco device"""
+    """ Class that analyses and stores the settings of 'show version' on a Cisco device.
+
+        It uses regexes to find the model and the hostname.
+
+        output_show_version = [
+            'router-1-eth uptime is 1 year, 2 days, 27 minutes',
+            'Cisco 2821 (revision 53.xx) with 514048K/10240K bytes of memory.']
+
+        c = ShowVersion(output_show_version)
+        c.model    -> '2821'
+        c.hostname -> 'router-1-eth'
+
+        The 'load' method looks in the 'version' subdirectory of the path=''.
+    """
 
     _showcommand = 'version'
 
@@ -84,7 +97,28 @@ class ShowVersion(ParseShowCommand):
 
 
 class ShowIPInterfacesBrief(ParseShowCommand):
-    """Class that analyses and stores the ouput of 'show ip interfaces brief' on a Cisco device"""
+    """ Class that analyses and stores the ouput of 'show ip interfaces brief' on a Cisco device
+
+        Finds the status of each interface and the hostname.
+
+        The hostname is the final line of the text. The CLI script can append this,
+        since it is the command prompt of a Cisco device.
+
+        output_show_ip_interfaces_brief = [
+            'Interface                  IP-Address      OK? Method Status                Protocol',
+            'GigabitEthernet0/0         unassigned      YES NVRAM  up                    up',
+            'Loopback1                  192.168.0.92    YES NVRAM  up                    up',
+            'router-1-eth']
+
+        c = ShowIPInterfacesBrief(output_show_ip_interfaces_brief)
+
+        c.hostname -> 'router-1-eth'
+
+        c.interfaces_status -> { 'GigabitEthernet0/0': 'up',
+                                'Loopback1': 'up'}
+
+        The 'load' method looks in the 'int' subdirectory of the path=''.
+       """
 
     _showcommand = 'int'
 
