@@ -68,7 +68,7 @@ def read_files_to_objects(path, result_type, regex=r'(.+)', id='', verbose=False
     total = len(file_names)
     for i, file_name in enumerate(file_names, 1):
         if verbose:
-            print "opening :", i + '/' + total, path + '/' + file_name, "...",
+            print "opening :", str(i) + '/' + str(total), path + '/' + file_name, "...",
         value = result_type.load(file_name, path=path)
         if value:
             key = getattr(value, id, file_name)
