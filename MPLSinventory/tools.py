@@ -62,13 +62,22 @@ def list_files(regex, path):
     return search_all(regex, os.listdir(path))
 
 
-def read_files_to_objects(path, result_type, regex=r'(.+)', id=''):
+def read_files_to_objects(path, result_type, regex=r'(.+)', id='', verbose=False):
     result = {}
-    for file_name in list_files(regex, path):
+    file_names = list_files(regex, path)
+    total = len(file_names)
+    for i, file_name in enumerate(file_names, 1):
+        if verbose:
+            print "opening :", i + '/' + total, path + '/' + file_name, "...",
         value = result_type.load(file_name, path=path)
         if value:
             key = getattr(value, id, file_name)
             result[key] = value
+            if verbose:
+                print "parsed config for :", key
+        else:
+            if verbose:
+                print "skipping"
     return result
 
 
