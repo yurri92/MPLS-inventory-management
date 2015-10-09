@@ -170,7 +170,10 @@ def save_dict_as_csv(dict, filename, attributes=None):
         for item in dict.values():
             row = []
             for attribute in attributes:
-                row.append(item[attribute])
+                value = ''
+                if attribute in item.keys():
+                    value = item[attribute]
+                row.append(value)
             f.writerow(row)
 
 
@@ -200,7 +203,11 @@ def copy_json_object(json_object1, json_object2, attributes=None, key_prepend=''
     if attributes is None:
         attributes = json_object2.keys()
     for attribute in attributes:
-        json_object1[key_prepend + attribute] = json_object2[attribute]
+        key1 = key_prepend + attribute
+        if key1 in json_object1.keys():
+            if json_object1[key1] and not json_object2[attribute]:
+                continue
+        json_object1[key1] = json_object2[attribute]
 
 
 def combine(dict1, dict2, match_function, key_prepend=''):
@@ -210,13 +217,12 @@ def combine(dict1, dict2, match_function, key_prepend=''):
     - the keys of the copied items will be prepended with the key_prepend
     - ?? mismatching items will be stored in dict1['mismatch']
     """
-    # empty_json_object2 = create_empty_template(dict2[dict2.keys()[0]])
+    empty_json_object2 = create_empty_template(dict2[dict2.keys()[0]])
     for key1, json_object1 in dict1.items():
         json_object2 = match_function(json_object1, dict2)
-        if json_object2:
-            copy_json_object(json_object1, json_object2, key_prepend=key_prepend)
-    #    if not json_object2:
-    #        json_object2 = empty_json_object2
+        if not json_object2:
+            json_object2 = empty_json_object2
+        copy_json_object(json_object1, json_object2, key_prepend=key_prepend)
 
 
 # move to match_rules.py
