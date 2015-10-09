@@ -121,7 +121,10 @@ class RegexStructure(object):
         r = {k: self._make_json(v) for k, v in self.__dict__.items() if k != 'config'}
         for key in self._json_simplify:
             if key in r.keys() and r[key]:
-                r[key] = r[key]['name']
+                if isinstance(r[key], dict):
+                    r[key] = r[key]['name']
+                if isinstance(r[key], list):
+                    r[key] = [i['name'] for i in r[key]]
         return r
 
     def _make_json(self, obj):
