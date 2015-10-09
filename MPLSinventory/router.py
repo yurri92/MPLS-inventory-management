@@ -249,9 +249,10 @@ class MPLSRouter(Router):
 
     def _bgp_wan_neighbor(self):
         bgp_wan_neighbor = ''
-        for neighbor, remote_as in self.bgp.neighbors:
-            if remote_as in self.service_provider_as_nrs:
-                bgp_wan_neighbor = neighbor
+        if self.bgp:
+            for neighbor, remote_as in self.bgp.neighbors:
+                if remote_as in self.service_provider_as_nrs:
+                    bgp_wan_neighbor = neighbor
         return bgp_wan_neighbor
 
     def _set_wan_attributes(self):
