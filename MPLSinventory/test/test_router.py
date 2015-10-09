@@ -179,6 +179,10 @@ class TestMPLSRouter(unittest.TestCase):
         router_bandwidth = 19800
         self.assertEqual(router_bandwidth, self.r1.bandwidth)
 
+    def test_router_qos_interface(self):
+        qos_interface = 'GigabitEthernet0/1'
+        self.assertEqual(qos_interface, self.r1.qos_interface)
+
 
 class TestMPLSRouter_ATM(unittest.TestCase):
     @classmethod

@@ -211,6 +211,8 @@ class MPLSRouter(Router):
     """Analysis and stores the settings of a MPLS Router
        a mpls router has:
        - a wan interface
+       - a interface where the qos policies are applied
+       - qos attributes
        - a speed
        - redundancy"""
 
@@ -259,10 +261,12 @@ class MPLSRouter(Router):
         for attribute in self._wan_int_attributes + self._wan_qos_attributes:
             setattr(self, attribute, 0)
 
+        self.qos_interface = ''
         interface = self.wan
         while interface:
             if interface.policy_out:
                 qos_policy = self.qos_policies[interface.policy_out]
+                self.qos_interface = interface.name
                 assign_attr_if_better('shaper', qos_policy, self)
                 if qos_policy.sub_policy:
                     qos_policy = self.qos_policies[qos_policy.sub_policy]
@@ -276,4 +280,6 @@ class MPLSRouter(Router):
         # or if descriptive item is within range of configurable items
         self.bandwidth = max(self.shaper, self.qos_bandwidth, self.atm_bandwidth,
                              self.admin_bandwidth, self.rate_limit)
+
+
 
