@@ -82,6 +82,9 @@ class RegexStructure(object):
     _json_simplify = []
 
     def __init__(self, config):
+        if isinstance(config, str):
+            config = config.splitlines
+        config = [line.rstrip() for line in config]
         self.config = config
         for name, (regex, result_type) in self._single_attributes.items():
             self._add_single_attribute(name, regex, result_type)

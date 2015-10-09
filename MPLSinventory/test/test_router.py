@@ -22,6 +22,7 @@ class TestRouter(unittest.TestCase):
         path = os.path.join(PATH, FILENAME_ETH)
         file = open(path, 'rb')
         config = file.readlines()
+        config = [l.rstrip() for l in config]
         file.close
         self.assertEqual(self.r1.config, config)
 
@@ -38,12 +39,12 @@ class TestRouter(unittest.TestCase):
         self.assertItemsEqual(interfaces.keys(), interface_names)
 
     def test_interface_configlet(self):
-        configlet = ['interface GigabitEthernet0/1.101\n',
-                     ' description *** WAN interface ***\n',
-                     ' encapsulation dot1Q 101\n',
-                     ' ip address 192.168.100.2 255.255.255.252\n',
-                     ' ip mtu 1500\n',
-                     ' no cdp enable\n']
+        configlet = ['interface GigabitEthernet0/1.101',
+                     ' description *** WAN interface ***',
+                     ' encapsulation dot1Q 101',
+                     ' ip address 192.168.100.2 255.255.255.252',
+                     ' ip mtu 1500',
+                     ' no cdp enable']
         i = self.r1.interfaces['GigabitEthernet0/1.101']
         self.assertSequenceEqual(i.config, configlet)
 
@@ -76,27 +77,27 @@ class TestRouter(unittest.TestCase):
 
     def test_qos_policy_configlet(self):
         configlet = [
-                    'policy-map SAMPLE-QOS-OUT\n',
-                    ' description QOS_OUTBOUND_POLICY\n',
-                    ' class mgmt_output\n',
-                    '  police 6000 6000 6000 conform-action set-dscp-transmit 0 exceed-action set-dscp-transmit 0 violate-action set-dscp-transmit 0\n',
-                    '  bandwidth 190\n',
-                    '  random-detect\n',
-                    ' class realtime_output\n',
-                    '  priority 6504 16000\n',
-                    '  police 6504000 16000 16000 conform-action transmit  exceed-action drop  violate-action drop \n',
-                    ' class gold_output\n',
-                    '  bandwidth 3635\n',
-                    '  random-detect dscp-based\n',
-                    ' class silver_output\n',
-                    '  bandwidth 3635\n',
-                    '  random-detect dscp-based\n',
-                    ' class bronze_output\n',
-                    '  bandwidth 3635\n',
-                    '  random-detect dscp-based\n',
-                    ' class class-default\n',
-                    '  bandwidth 1211\n',
-                    '  random-detect\n']
+                    'policy-map SAMPLE-QOS-OUT',
+                    ' description QOS_OUTBOUND_POLICY',
+                    ' class mgmt_output',
+                    '  police 6000 6000 6000 conform-action set-dscp-transmit 0 exceed-action set-dscp-transmit 0 violate-action set-dscp-transmit 0',
+                    '  bandwidth 190',
+                    '  random-detect',
+                    ' class realtime_output',
+                    '  priority 6504 16000',
+                    '  police 6504000 16000 16000 conform-action transmit  exceed-action drop  violate-action drop',
+                    ' class gold_output',
+                    '  bandwidth 3635',
+                    '  random-detect dscp-based',
+                    ' class silver_output',
+                    '  bandwidth 3635',
+                    '  random-detect dscp-based',
+                    ' class bronze_output',
+                    '  bandwidth 3635',
+                    '  random-detect dscp-based',
+                    ' class class-default',
+                    '  bandwidth 1211',
+                    '  random-detect']
         q = self.r1.qos_policies['SAMPLE-QOS-OUT']
         self.assertSequenceEqual(q.config, configlet)
 
@@ -121,25 +122,25 @@ class TestRouter(unittest.TestCase):
         self.assertEqual(priority_class, q.priority_class.name)
 
     def test_bgp_config(self):
-        bgp_config = ['router bgp 64512\n',
-                      ' bgp log-neighbor-changes\n',
-                      ' network 10.0.10.0 mask 255.255.255.0\n',
-                      ' network 10.0.20.0 mask 255.255.255.0\n',
-                      ' network 10.0.30.0 mask 255.255.255.0\n',
-                      ' network 10.0.40.0 mask 255.255.255.0\n',
-                      ' aggregate-address 10.0.0.0 255.255.0.0 summary-only\n',
-                      ' timers bgp 10 30\n',
-                      ' neighbor 10.0.10.3 remote-as 64512\n',
-                      ' neighbor 10.0.10.3 next-hop-self\n',
-                      ' neighbor 10.0.10.3 send-community both\n',
-                      ' neighbor 10.0.10.3 prefix-list BLOCK_MGMT in\n',
-                      ' neighbor 192.168.100.1 remote-as 10001\n',
-                      ' neighbor 192.168.100.1 description *** EBGP to PE router ***\n',
-                      ' neighbor 192.168.100.1 update-source GigabitEthernet0/1.101\n',
-                      ' neighbor 192.168.100.1 send-community\n',
-                      ' neighbor 192.168.100.1 soft-reconfiguration inbound\n',
-                      ' neighbor 192.168.100.1 route-map SET-LOCAL-PREF in\n',
-                      ' neighbor 192.168.100.1 filter-list 1 out\n']
+        bgp_config = ['router bgp 64512',
+                      ' bgp log-neighbor-changes',
+                      ' network 10.0.10.0 mask 255.255.255.0',
+                      ' network 10.0.20.0 mask 255.255.255.0',
+                      ' network 10.0.30.0 mask 255.255.255.0',
+                      ' network 10.0.40.0 mask 255.255.255.0',
+                      ' aggregate-address 10.0.0.0 255.255.0.0 summary-only',
+                      ' timers bgp 10 30',
+                      ' neighbor 10.0.10.3 remote-as 64512',
+                      ' neighbor 10.0.10.3 next-hop-self',
+                      ' neighbor 10.0.10.3 send-community both',
+                      ' neighbor 10.0.10.3 prefix-list BLOCK_MGMT in',
+                      ' neighbor 192.168.100.1 remote-as 10001',
+                      ' neighbor 192.168.100.1 description *** EBGP to PE router ***',
+                      ' neighbor 192.168.100.1 update-source GigabitEthernet0/1.101',
+                      ' neighbor 192.168.100.1 send-community',
+                      ' neighbor 192.168.100.1 soft-reconfiguration inbound',
+                      ' neighbor 192.168.100.1 route-map SET-LOCAL-PREF in',
+                      ' neighbor 192.168.100.1 filter-list 1 out']
         self.assertSequenceEqual(bgp_config, self.r1.bgp.config)
 
     def test_bgp_neighbors(self):
