@@ -124,7 +124,6 @@ class RegexStructure(object):
                 if 'name' in r[key].keys():
                     r[key] = r[key]['name']
                 elif isinstance(r[key], dict):
-                    print key, r[key]
                     r[key] = [i['name'] for i in r[key].values()]
         return r
 
