@@ -58,6 +58,9 @@ class ParseShowCommand(RegexStructure):
 
            The method sets an attribute 'ip' that is used to store
            ip or filename as string.
+
+           to do:
+           - filename can be anything
         """
         filename = str(ip)
         if not filename.endswith('.txt'):
@@ -65,7 +68,8 @@ class ParseShowCommand(RegexStructure):
         if not path.endswith(cls._showcommand):
             path = os.path.join(path, cls._showcommand)
         result = super(ParseShowCommand, cls).load(filename, path)
-        result.ip = filename[:-4]
+        if result:
+            result.ip = filename[:-4]   # remove '.txt' extension
         return result
 
 

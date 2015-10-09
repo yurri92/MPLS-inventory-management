@@ -149,4 +149,6 @@ class RegexStructure(object):
         if os.path.isfile(path):
             with open(path, 'r') as fp:
                 config = fp.readlines()
+        if len(config) < 2:
+            return None
         return cls(config)

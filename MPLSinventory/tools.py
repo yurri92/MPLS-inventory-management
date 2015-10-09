@@ -66,8 +66,9 @@ def read_files_to_objects(path, result_type, regex=r'(.+)', id=''):
     result = {}
     for file_name in list_files(regex, path):
         value = result_type.load(file_name, path=path)
-        key = getattr(value, id, file_name)
-        result[key] = value
+        if value:
+            key = getattr(value, id, file_name)
+            result[key] = value
     return result
 
 
@@ -128,7 +129,7 @@ def getattr_recursive(obj, name):
 
 
 def create_dict_from_objects(objects, attributes=[]):
-    """todo, convert ip objects to str"""
+    """to improve, convert ip objects to str"""
     result = {}
     for key, my_obj in objects.items():
         if not attributes:
