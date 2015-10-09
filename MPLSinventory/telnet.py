@@ -129,6 +129,7 @@ class ShowIPInterfacesBrief(ParseShowCommand):
     def __init__(self, config):
         super(ShowIPInterfacesBrief, self).__init__(config)
         self._set_interface_status()
+        self._set_free_eth_ports()
         self.hostname = self.config[-1]
 
     def _set_interface_status(self):
@@ -142,4 +143,13 @@ class ShowIPInterfacesBrief(ParseShowCommand):
             elif 'up' in status:
                 status = 'up'
             self.interface_status[interface] = status
+
+    def _set_free_eth_ports(self):
+        self.free_eth_ports = 0
+        for interface, status in self.interface_status.items():
+            if ('Giga' in interface) or ('Fast' in interface):
+                if '.' not in interface:
+                    if status in ['admin_shut', 'down']:
+                        self.free_eth_ports += 1
+
  

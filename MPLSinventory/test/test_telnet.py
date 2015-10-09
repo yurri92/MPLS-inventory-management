@@ -64,3 +64,11 @@ class TestParseShowVersion(unittest.TestCase):
              'Vlan300': 'up',
              'Vlan400': 'up'}
         self.assertItemsEqual(r, self.si2.interface_status)
+
+    def test_free_eth_ports_r1(self):
+        r = 0
+        self.assertEqual(r, self.si1.free_eth_ports)
+
+    def test_free_eth_ports_r2(self):
+        r = 3
+        self.assertEqual(r, self.si2.free_eth_ports)

@@ -202,6 +202,7 @@ def copy_json_object(json_object1, json_object2, attributes=None, key_prepend=''
     for attribute in attributes:
         json_object1[key_prepend + attribute] = json_object2[attribute]
 
+
 def combine(dict1, dict2, match_function, key_prepend=''):
     """combine the json_objects in dict1 with dict2
     - match_function(json_object, dict2) will return the best matching json_object from dict2
@@ -209,12 +210,13 @@ def combine(dict1, dict2, match_function, key_prepend=''):
     - the keys of the copied items will be prepended with the key_prepend
     - ?? mismatching items will be stored in dict1['mismatch']
     """
-    empty_json_object2 = create_empty_template(dict2[dict2.keys()[0]])
+    # empty_json_object2 = create_empty_template(dict2[dict2.keys()[0]])
     for key1, json_object1 in dict1.items():
         json_object2 = match_function(json_object1, dict2)
-        if not json_object2:
-            json_object2 = empty_json_object2
-        copy_json_object(json_object1, json_object2, key_prepend=key_prepend)
+        if json_object2:
+            copy_json_object(json_object1, json_object2, key_prepend=key_prepend)
+    #    if not json_object2:
+    #        json_object2 = empty_json_object2
 
 
 # move to match_rules.py
