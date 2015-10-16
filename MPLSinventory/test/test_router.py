@@ -184,6 +184,11 @@ class TestMPLSRouter(unittest.TestCase):
         qos_interface = 'GigabitEthernet0/1'
         self.assertEqual(qos_interface, self.r1.qos_interface)
 
+    def test_router_json(self):
+        j = self.r1.json()
+        qos_interface = 'GigabitEthernet0/1'
+        self.assertEqual(j['qos_interface'], qos_interface)
+
 
 class TestMPLSRouter_ATM(unittest.TestCase):
     @classmethod
