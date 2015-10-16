@@ -189,6 +189,10 @@ class TestMPLSRouter(unittest.TestCase):
         qos_interface = 'GigabitEthernet0/1'
         self.assertEqual(j['qos_interface'], qos_interface)
 
+    def test_router_hsrp(self):
+        hsrp = '10.0.10.1'
+        self.assertEqual(self.r1.hsrp, hsrp)
+
 
 class TestMPLSRouter_ATM(unittest.TestCase):
     @classmethod

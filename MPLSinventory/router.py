@@ -236,7 +236,7 @@ class MPLSRouter(Router):
         self.wan = self._get_wan_interface()
         self._set_wan_attributes()
         self.redundancy = ''
-        self.hsrp = ''
+        self.hsrp = self._get_hsrp_address()
         self.pair_with = ''
 
     def _get_wan_interface(self):
@@ -280,6 +280,16 @@ class MPLSRouter(Router):
         # or if descriptive item is within range of configurable items
         self.bandwidth = max(self.shaper, self.qos_bandwidth, self.atm_bandwidth,
                              self.admin_bandwidth, self.rate_limit)
+
+    def _get_hsrp_address(self):
+        hsrp_list = []
+        for interface in self.interfaces.values():
+            if interface.hsrp:
+                hsrp_list.append(interface.hsrp)
+        if hsrp_list:
+            return str(sorted(hsrp_list)[0])
+        else:
+            return ''
 
 
 
