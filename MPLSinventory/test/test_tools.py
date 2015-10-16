@@ -16,7 +16,7 @@ ROUTER_DIR = os.path.join('test', 'sample_configs')
 
 
 class TestTools(unittest.TestCase):
-    router_attributes = ['hostname', 'ip', 'hsrp',
+    router_attributes = ['hostname', "interfaces['Loopback1'].ip.ip", 'hsrp',
                          'wan.name', 'wan.parent.name',
                          'qos_interface',
                          'qos_bandwidth', 'shaper', 'atm_bandwidth',
@@ -110,9 +110,31 @@ class TestTools(unittest.TestCase):
             showversions_l = json.load(fp)
         self.assertItemsEqual(showversions_d, showversions_l)
 
+    def test_ordered_csv(self):
+        showversions_d = tools.create_dict_from_objects(self.showversions)
+        showinterfaces_d = tools.create_dict_from_objects(self.showinterfaces,
+                                                          attributes=self.show_int_attributes)
+        routers_d = tools.create_dict_from_objects(self.routers, attributes=self.router_attributes)
+        tools.combine(showversions_d, showinterfaces_d, match_show_commands)
+        tools.combine(routers_d, showversions_d, match_telnet_to_router)
+        file_name_regex = r'(result_test\.csv)'
+        file_exists = tools.list_files(file_name_regex, '.')
+        if file_exists:
+            os.remove('result_test.csv')
+        tools.save_dict_as_csv(routers_d, 'result_test.csv',
+                               attributes=self.router_attributes, sort_by='hostname')
+        with open('result_test.csv', 'r') as fp:
+            csv = fp.readlines()
+            firstline = csv[1].split(',')
+        self.assertEqual(firstline[0], 'router-1-eth')
+
     @classmethod
     def tearDownClass(cls):
         file_name_regex = r'(result_test\.json)'
         file_exists = tools.list_files(file_name_regex, '.')
         if file_exists:
             os.remove('result_test.json')
+        file_name_regex = r'(result_test\.csv)'
+        file_exists = tools.list_files(file_name_regex, '.')
+        if file_exists:
+            os.remove('result_test.csv')

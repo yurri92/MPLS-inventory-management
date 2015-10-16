@@ -2,6 +2,7 @@ import os
 import json
 import csv
 import re
+from copy import copy
 
 COMPILED_REGEXES = {}
 
@@ -161,13 +162,36 @@ def save_dict_as_json(dict, filename):
         json.dump(dict, fp, indent=4)
 
 
-def save_dict_as_csv(dict, filename, attributes=None):
+def save_dict_as_csv(jdict, filename, attributes=None, sort_by=None, group_by=None):
     if attributes is None:
-        attributes = dict[dict.keys()[0]].keys()
+        attributes = jdict[jdict.keys()[0]].keys()
+    keylist = jdict.keys()
+    if sort_by:
+        emptys = [key for key in keylist if not jdict[key][sort_by]]
+        keylist = [key for key in keylist if jdict[key][sort_by]]
+        keylist = sorted(keylist, key=lambda i: jdict[i][sort_by])
+        keylist.extend(emptys)
+    if group_by:
+        keylist2 = copy(keylist)
+        keylist = []
+        while keylist2:
+            key = keylist2.pop(0)
+            keylist.append(key)
+            if jdict[key][group_by]:
+                group_id = jdict[key][group_by]
+                group = []
+                for key in keylist2:
+                    if jdict[key][group_by] == group_id:
+                        group.append(key)
+                keylist.extend(group)
+                for key in group:
+                    keylist2.remove(key)
+
     with open(filename, 'wb') as fp:
         f = csv.writer(fp)
         f.writerow(attributes)
-        for item in dict.values():
+        for key in keylist:
+            item = jdict[key]
             row = []
             for attribute in attributes:
                 value = ''
@@ -216,6 +240,7 @@ def combine(dict1, dict2, match_function, key_prepend=''):
     - dict1 will contain all the combined jsons
     - the keys of the copied items will be prepended with the key_prepend
     - ?? mismatching items will be stored in dict1['mismatch']
+    - todo: add not used items from dict2
     """
     empty_json_object2 = create_empty_template(dict2[dict2.keys()[0]])
     for key1, json_object1 in dict1.items():
