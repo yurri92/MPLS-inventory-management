@@ -249,3 +249,94 @@ def combine(dict1, dict2, match_function, key_prepend=''):
             json_object2 = empty_json_object2
         copy_json_object(json_object1, json_object2, key_prepend=key_prepend)
 
+
+def combine2(dict1, dict2, match_function, key_prepend=''):
+    """combine the json_objects in dict1 with dict2 and create a new dict
+    - match_function(json_object, dict2) will return the best matching json_object from dict2
+    - dict1 will contain all the combined jsons
+    - the keys of the copied items will be prepended with the key_prepend
+    - ?? mismatching items will be stored in dict1['mismatch']
+    - todo: add not used items from dict2
+    """
+    keys2 = dict2.keys()
+    empty_json_object2 = create_empty_template(dict2.values()[0])
+    empty_json_object1 = create_empty_template(dict1.values()[0])
+    for key1, json_object1 in dict1.items():
+        json_object2 = empty_json_object2
+        key2 = match_function(json_object1, dict2)
+        if key2:
+            json_object2 = dict2[key2]
+            if key2 in keys2:
+                keys2.remove(key2)
+        copy_json_object(json_object1, json_object2, key_prepend=key_prepend)
+    for i, key2 in enumerate(keys2):
+        json_object1 = copy(empty_json_object1)
+        json_object2 = dict2[key2]
+        copy_json_object(json_object1, json_object2, key_prepend=key_prepend)
+        dict1['mismatch'+str(i)] = json_object1
+
+
+def combine3(dict1, dict2, score_function, key_prepend=''):
+    """combine best match from dict2 to dict1 based on a score.
+    For each item in dict1 the best possible candidate from dict2 is combined.
+
+    - Calculates for each combination of items in dict1 and dict2 the score
+    - For each item from dict1 all the possible candidates are selected from dict2
+      based on max(score).
+    - For each candidate from dict2 the max(score) to all items in dict1 is calculated.
+    If these max(score)'s are identical there is a fit.
+    If not, the canidate in dict2 has a better fit to another dict1 item.
+
+    """
+
+    empty_json_object1 = create_empty_template(dict1.values()[0])
+    empty_json_object2 = create_empty_template(dict2.values()[0])
+    keys1 = dict1.keys()
+    keys2 = dict2.keys()
+    used_keys2 = []
+    scores_matrix = []
+    candidates = {}
+
+    for k1 in keys1:
+        # create matrix row
+        row = []
+        for k2 in keys2:
+            score = score_function(dict1[k1], dict2[k2])
+            row.append(score)
+        scores_matrix.append(row)
+
+        # find max scoring elements from dict2 as candidates for dict1[k1]
+        candidates[k1] = []
+        max_score = max(row)
+        # find k2's for that score
+        if max_score > 0:
+            for i, (k2, score) in enumerate(zip(keys2, row)):
+                if score == max_score:
+                    candidates[k1].append((i, k2, score))
+
+    for k1 in keys1:
+        json_object1 = dict1[k1]
+        json_object2 = empty_json_object2
+
+        for i, k2, score in candidates[k1]:
+            keys2_column = column(scores_matrix, i)
+            max_score = max(keys2_column)
+            if max_score == score:
+                json_object2 = dict2[k2]
+                used_keys2.append(k2)
+
+        copy_json_object(json_object1, json_object2, key_prepend=key_prepend)
+
+    unused_keys2 = list(set(keys2)-set(used_keys2))
+    for i, key2 in enumerate(unused_keys2):
+        json_object1 = copy(empty_json_object1)
+        json_object2 = dict2[key2]
+        copy_json_object(json_object1, json_object2, key_prepend=key_prepend)
+        dict1['unknown'+str(i)] = json_object1
+
+
+def column(matrix, i):
+    return [row[i] for row in matrix]
+
+
+
