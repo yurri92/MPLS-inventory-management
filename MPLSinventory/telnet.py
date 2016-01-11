@@ -93,7 +93,8 @@ class ShowVersion(ParseShowCommand):
 
     _single_attributes = {
         'model': (r'^\s*.isco\s+(\S+).+memory\.\s*$', str),
-        'hostname': (r'^\s*(\S+)\s+uptime', str)
+        'hostname': (r'^\s*(\S+)\s+uptime', str),
+        'serial': (r'^\s*Processor\s+board\s+ID\s+(\S+)\s*$', str)
     }
 
     def __init__(self, config):
@@ -151,5 +152,3 @@ class ShowIPInterfacesBrief(ParseShowCommand):
                 if '.' not in interface:
                     if status in ['admin_shut', 'down']:
                         self.free_eth_ports += 1
-
- 
