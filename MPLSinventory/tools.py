@@ -337,6 +337,3 @@ def combine3(dict1, dict2, score_function, key_prepend=''):
 
 def column(matrix, i):
     return [row[i] for row in matrix]
-
-
-
