@@ -298,40 +298,27 @@ def combine3(dict1, dict2, score_function, key_prepend='', add_unused=True, verb
     scores_matrix = []
     candidates = {}
 
-    if verbose:                             # need to improve this!
-        for k1 in tqdm(keys1):
-            # create matrix row
-            row = []
-            for k2 in keys2:
-                score = score_function(dict1[k1], dict2[k2])
-                row.append(score)
-            scores_matrix.append(row)
-
-            # find max scoring elements from dict2 as candidates for dict1[k1]
-            candidates[k1] = []
-            max_score = max(row)
-            # find k2's for that score
-            if max_score > 0:
-                for i, (k2, score) in enumerate(zip(keys2, row)):
-                    if score == max_score:
-                        candidates[k1].append((i, k2, score))
+    if verbose:
+        keylist = tqdm(keys1)
     else:
-        for k1 in keys1:
-            # create matrix row
-            row = []
-            for k2 in keys2:
-                score = score_function(dict1[k1], dict2[k2])
-                row.append(score)
-            scores_matrix.append(row)
+        keylist = keys1
 
-            # find max scoring elements from dict2 as candidates for dict1[k1]
-            candidates[k1] = []
-            max_score = max(row)
-            # find k2's for that score
-            if max_score > 0:
-                for i, (k2, score) in enumerate(zip(keys2, row)):
-                    if score == max_score:
-                        candidates[k1].append((i, k2, score))
+    for k1 in keylist:
+        # create matrix row
+        row = []
+        for k2 in keys2:
+            score = score_function(dict1[k1], dict2[k2])
+            row.append(score)
+        scores_matrix.append(row)
+
+        # find max scoring elements from dict2 as candidates for dict1[k1]
+        candidates[k1] = []
+        max_score = max(row)
+        # find k2's for that score
+        if max_score > 0:
+            for i, (k2, score) in enumerate(zip(keys2, row)):
+                if score == max_score:
+                    candidates[k1].append((i, k2, score))
 
     for k1 in keys1:
         json_object1 = dict1[k1]
