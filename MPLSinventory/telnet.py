@@ -102,9 +102,9 @@ class ShowVersion(ParseShowCommand):
         self._set_ios_version()
 
     def _set_ios_version(self):
-        regex = r'^\s*.isco\s+.+,\s+Version(.+),.+$'
+        regex = r'^.*IOS\s+.+,\s+Version(.+),.+$'
         version_string = search(regex, self.config)
-        regex = r'^\s*(\d+)\.(\d+)\((.+)\)(\w*?)(\d*)$'
+        regex = r'^\s*(\d+)\.(\d+)\((.+)\)([A-Z]*?)(\d*[a-z]*)$'
         self.ios_version = search(regex, version_string)
 
 
