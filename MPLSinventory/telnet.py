@@ -1,6 +1,6 @@
 import os
 from regexstructure import RegexStructure
-from tools import search_all
+from tools import search, search_all
 
 """Module that provides classes to analyse and store the output of CLI commands
    on network device."""
@@ -99,6 +99,13 @@ class ShowVersion(ParseShowCommand):
 
     def __init__(self, config):
         super(ShowVersion, self).__init__(config)
+        self._set_ios_version()
+
+    def _set_ios_version(self):
+        regex = r'^\s*.isco\s+.+,\s+Version(.+),.+$'
+        version_string = search(regex, self.config)
+        regex = r'^\s*(\d+)\.(\d+)\((.+)\)(\w*?)(\d*)$'
+        self.ios_version = search(regex, version_string)
 
 
 class ShowIPInterfacesBrief(ParseShowCommand):

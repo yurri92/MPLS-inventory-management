@@ -21,7 +21,7 @@ def search(regex, thing):
     if isinstance(thing, list):
         for item in thing:
             result = search(regex, item)
-            if result:
+            if result:                                  # improve for result that is a tuple of empty strings
                 break
 
     if isinstance(thing, str):

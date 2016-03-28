@@ -34,6 +34,14 @@ class TestParseShowVersion(unittest.TestCase):
         hostname = 'router-2-atm'
         self.assertEqual(hostname, self.sv2.hostname)
 
+    def test_parse_show_version_ios_version1(self):
+        ios_version = ('12', '4', '3', '', '')
+        self.assertEqual(ios_version, self. sv1.ios_version)
+
+    def test_parse_show_version_ios_version2(self):
+        ios_version = ('15', '1', '2', 'M', '4')
+        self.assertEqual(ios_version, self. sv2.ios_version)
+
     def test_parse_show_ip_interfaces_brief_r1(self):
         r = {'GigabitEthernet0/0': 'up',
              'GigabitEthernet0/0.100': 'up',

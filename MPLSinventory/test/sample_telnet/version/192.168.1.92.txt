@@ -1,5 +1,5 @@
 show version
-Cisco IOS Software, C880 Software (C880DATA-UNIVERSALK9-M), Version 15.1(x)Mx, RELEASE SOFTWARE (fc1)
+Cisco IOS Software, C880 Software (C880DATA-UNIVERSALK9-M), Version 15.1(2)M4, RELEASE SOFTWARE (fc1)
 Compiled Tue 12-Sep-11 08:53 by prod_rel_team
 
 ROM: System Bootstrap, Version 12.4(2xxr)YBx, RELEASE SOFTWARE (fc1)
@@ -31,7 +31,7 @@ License UDI:
 -------------------------------------------------
 Device#	  PID			SN
 -------------------------------------------------
-*0  	  CISCO887VA-SEC-K9     FCZXXXXXXXX     
+*0  	  CISCO887VA-SEC-K9     FCZXXXXXXXX
 
 
 
