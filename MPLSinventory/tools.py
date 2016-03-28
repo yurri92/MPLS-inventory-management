@@ -140,7 +140,7 @@ def getattr_recursive(obj, name):
 
 
 def create_dict_from_objects(objects, attributes=[]):
-    """to improve, convert ip objects to str"""
+    """to improve, convert ip objects to str (if type is ip then str(obj))"""
     result = {}
     for key, my_obj in objects.items():
         if not attributes:
@@ -235,7 +235,7 @@ def copy_json_object(json_object1, json_object2, attributes=None, key_prepend=''
         json_object1[key1] = json_object2[attribute]
 
 
-def combine(dict1, dict2, match_function, key_prepend=''):
+def combine(dict1, dict2, match_function, key_prepend='', verbose=False):
     """combine the json_objects in dict1 with dict2
     - match_function(json_object, dict2) will return the best matching json_object from dict2
     - dict1 will contain all the combined jsons
@@ -244,7 +244,14 @@ def combine(dict1, dict2, match_function, key_prepend=''):
     - todo: add not used items from dict2
     """
     empty_json_object2 = create_empty_template(dict2[dict2.keys()[0]])
-    for key1, json_object1 in dict1.items():
+
+    if verbose:
+        keylist = tqdm(dict1.keys())
+    else:
+        keylist = dict1.keys()
+
+    for key1 in keylist:
+        json_object1 = dict1[key1]
         json_object2 = match_function(json_object1, dict2)
         if not json_object2:
             json_object2 = empty_json_object2
