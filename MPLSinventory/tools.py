@@ -25,7 +25,7 @@ def search(regex, thing):
                 if isinstance(result, tuple):
                     if reduce(lambda x, y: bool(x) or bool(y), result):   # test if tuple has results
                         break
-                else:
+                else:           # if result is not a tuple
                     break
 
     if isinstance(thing, str):
