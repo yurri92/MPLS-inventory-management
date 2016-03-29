@@ -21,8 +21,12 @@ def search(regex, thing):
     if isinstance(thing, list):
         for item in thing:
             result = search(regex, item)
-            if result:                                  # improve for result that is a tuple of empty strings
-                break
+            if result:
+                if isinstance(result, tuple):
+                    if reduce(lambda x, y: bool(x) or bool(y), result):   # test if tuple has results
+                        break
+                else:
+                    break
 
     if isinstance(thing, str):
         if regex not in COMPILED_REGEXES.keys():

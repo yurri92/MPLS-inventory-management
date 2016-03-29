@@ -1,6 +1,6 @@
 import os
 from regexstructure import RegexStructure
-from tools import search, search_all
+from tools import search_all
 
 """Module that provides classes to analyse and store the output of CLI commands
    on network device."""
@@ -79,12 +79,14 @@ class ShowVersion(ParseShowCommand):
         It uses regexes to find the model and the hostname.
 
         output_show_version = [
+            'Cisco IOS Software, 2800 Software (C2800NM-SPSERVICESK9-M), Version 12.4(3)T5, RELEASE SOFTWARE (fc1)',
             'router-1-eth uptime is 1 year, 2 days, 27 minutes',
             'Cisco 2821 (revision 53.xx) with 514048K/10240K bytes of memory.']
 
         c = ShowVersion(output_show_version)
         c.model    -> '2821'
         c.hostname -> 'router-1-eth'
+        c.ios_version -> ('12', '4', '3', 'T' ,'5')
 
         The 'load' method looks in the 'version' subdirectory of the path=''.
     """
@@ -94,18 +96,12 @@ class ShowVersion(ParseShowCommand):
     _single_attributes = {
         'model': (r'^\s*.isco\s+(\S+).+memory\.\s*$', str),
         'hostname': (r'^\s*(\S+)\s+uptime', str),
-        'serial': (r'^\s*Processor\s+board\s+ID\s+(\S+)\s*$', str)
+        'serial': (r'^\s*Processor\s+board\s+ID\s+(\S+)\s*$', str),
+        'ios_version': (r'^.*IOS\s+.+,\s+Version\s*(\d+)\.(\d+)\((.+)\)([A-Z]*?)(\d*[a-z]*),.+$', tuple)
     }
 
     def __init__(self, config):
         super(ShowVersion, self).__init__(config)
-        self._set_ios_version()
-
-    def _set_ios_version(self):
-        regex = r'^.*IOS\s+.+,\s+Version(.+),.+$'
-        version_string = search(regex, self.config)
-        regex = r'^\s*(\d+)\.(\d+)\((.+)\)([A-Z]*?)(\d*[a-z]*)$'
-        self.ios_version = search(regex, version_string)
 
 
 class ShowIPInterfacesBrief(ParseShowCommand):
