@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import json
 import csv
@@ -74,16 +75,16 @@ def read_files_to_objects(path, result_type, regex=r'(.+)', id='', verbose=False
     total = len(file_names)
     for i, file_name in enumerate(file_names, 1):
         if verbose:
-            print "opening :", str(i) + '/' + str(total), path + '/' + file_name, "...",
+            print("opening : {}/{} {}/{}...".format(i, total, path, file_name), end="")
         value = result_type.load(file_name, path=path)
         if value:
             key = getattr(value, id, file_name)
             result[key] = value
             if verbose:
-                print "parsed config for :", key
+                print("parsed config for :{}".format(key))
         else:
             if verbose:
-                print "skipping"
+                print("skipping")
     return result
 
 
