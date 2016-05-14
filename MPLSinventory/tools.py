@@ -29,7 +29,7 @@ def search(regex, thing):
                 else:           # if result is not a tuple
                     break
 
-    if isinstance(thing, str):
+    if isinstance(thing, str) or isinstance(thing, unicode):
         if regex not in COMPILED_REGEXES.keys():
             COMPILED_REGEXES[regex] = re.compile(regex)
         compiled_regex = COMPILED_REGEXES[regex]

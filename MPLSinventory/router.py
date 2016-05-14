@@ -1,3 +1,4 @@
+from __future__ import print_function
 import re
 from ipaddr import IPv4Network, IPv4Address
 from regexstructure import RegexStructure
@@ -92,7 +93,8 @@ class QoSPolicy(RegexStructure):
         if self.priority_class.bandwidth_percent:
             x1 = self.priority_class.bandwidth_percent
             x2 = self.priority_class.police
-            qos_bandwidth = int(x2/(x1/100.00))
+            if x1 and x2:
+                qos_bandwidth = int(x2/(x1/100.00))
         return qos_bandwidth
 
 
