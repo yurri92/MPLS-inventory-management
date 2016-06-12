@@ -203,6 +203,8 @@ def save_dict_as_csv(jdict, filename, attributes=None, sort_by=None, group_by=No
                 value = ''
                 if attribute in item.keys():
                     value = item[attribute]
+                    if isinstance(value, list):
+                        value = '; '.join(value)
                 row.append(value)
             f.writerow(row)
 
