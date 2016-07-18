@@ -35,7 +35,8 @@ def search(regex, thing):
         compiled_regex = COMPILED_REGEXES[regex]
         n = compiled_regex.groups       # number of capture groups requested
         result = tuple(n * [''])        # create tuple of empty strings
-        match = re.search(compiled_regex, thing)
+        match = compiled_regex.search(thing)
+        # match = re.search(compiled_regex, thing)
         if match:
             result = match.groups('')
         if len(result) == 1:
@@ -203,8 +204,8 @@ def save_dict_as_csv(jdict, filename, attributes=None, sort_by=None, group_by=No
                 value = ''
                 if attribute in item.keys():
                     value = item[attribute]
-                    if isinstance(value, list):
-                        value = '; '.join(value)
+                    # if isinstance(value, list):
+                    #    value = '; '.join(value)      # TODO doesnt work if value is a list of lists or tuples
                 row.append(value)
             f.writerow(row)
 
