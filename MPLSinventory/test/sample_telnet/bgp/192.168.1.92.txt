@@ -1,0 +1,17 @@
+show ip bgp sum
+BGP router identifier 192.168.0.92, local AS number 64512
+BGP table version is 1309860, main routing table version 1309860
+1624 network entries using 208611 bytes of memory
+1624 path entries using 92716 bytes of memory
+339/304 BGP path/bestpath attribute entries using 42036 bytes of memory
+296 BGP AS-PATH entries using 7136 bytes of memory
+2 BGP community entries using 48 bytes of memory
+2 BGP extended community entries using 48 bytes of memory
+0 BGP route-map cache entries using 0 bytes of memory
+0 BGP filter-list cache entries using 0 bytes of memory
+BGP using 350595 total bytes of memory
+BGP activity 121216/119265 prefixes, 270540/268421 paths, scan interval 60 secs
+
+Neighbor        V           AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+10.1.10.3       4        64513       0       0        1    0    0 never    Active
+192.168.101.1   4        10001 2266971 1872799   576999    0    0 3y12w        1620

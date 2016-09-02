@@ -1,4 +1,6 @@
 import os
+from collections import namedtuple
+from ipaddr import IPv4Address
 from regexstructure import RegexStructure
 from tools import search_all
 
@@ -155,3 +157,50 @@ class ShowIPInterfacesBrief(ParseShowCommand):
                 if '.' not in interface:
                     if status in ['admin_shut', 'down']:
                         self.free_eth_ports += 1
+
+
+BGP_neighbor = namedtuple('BGP_neighbor', ['ip', 'remote_as', 'up_down', 'state'])
+
+
+class ShowIPBGPSum(ParseShowCommand):
+    """ Class that analyses and stores the ouput of 'show ip bgp sum' on a Cisco device
+
+        Finds the status of each neighbor.
+
+        output_show_ip_bgp_sum = [
+            'BGP router identifier 192.168.0.92, local AS number 64512',
+            'BGP activity 121216/119265 prefixes, 270540/268421 paths, scan interval 60 secs',
+            'Neighbor        V           AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd',
+            '10.0.10.2       4        65012       0       0        1    0    0 never    Idle (Admin)',
+            '10.0.10.3       4        64512       0       0        0    0    0 never    Active',
+            '192.168.100.1   4        10001 2266971 1872799   576999    0    0 3y12w        1620']
+
+        c = ShowIPBGPSum(output_show_ip_bgp_sum)
+
+        c.neighbors.keys() -> ['10.0.10.2', '10.0.10.3', '192.168.100.1']
+
+        c.neighbor['10.0.10.2'].ip -> IPv4Address('10.0.10.2')
+        c.neighbor['10.0.10.2'].remote_as -> 65012
+        c.neighbor['10.0.10.2'].up_down -> 'never'
+        c.neighbor['10.0.10.2'].state -> 'Idle (Admin)'
+        c.neighbor['192.168.100.1'].state -> 1620
+
+        The 'load' method looks in the 'bgp' subdirectory of the path=''.
+       """
+
+    _showcommand = 'bgp'
+
+    def __init__(self, config):
+        super(ShowIPBGPSum, self).__init__(config)
+        self._set_bgp_neighbors()
+
+    def _set_bgp_neighbors(self):
+        self.neighbors = {}
+        regex = r'^\s*(\d+\.\d+\.\d+\.\d+)\s+\d+\s+(\d+)\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+(\w+)\s+(.+)\s*$'
+        for neighbor, remote_as, up_down, state in search_all(regex, self.config):
+            if state.isdigit():
+                state = int(state)
+            self.neighbors[neighbor] = BGP_neighbor(ip=IPv4Address(neighbor),
+                                                    remote_as=int(remote_as),
+                                                    up_down=up_down,
+                                                    state=state)

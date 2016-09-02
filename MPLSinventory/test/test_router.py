@@ -130,6 +130,8 @@ class TestRouter(unittest.TestCase):
                       ' network 10.0.40.0 mask 255.255.255.0',
                       ' aggregate-address 10.0.0.0 255.255.0.0 summary-only',
                       ' timers bgp 10 30',
+                      ' neighbor 10.0.10.2 remote-as 65012',
+                      ' neighbor 10.0.10.2 shutdown',
                       ' neighbor 10.0.10.3 remote-as 64512',
                       ' neighbor 10.0.10.3 next-hop-self',
                       ' neighbor 10.0.10.3 send-community both',

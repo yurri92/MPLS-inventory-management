@@ -292,6 +292,3 @@ class MPLSRouter(Router):
             return str(sorted(hsrp_list)[0])
         else:
             return ''
-
-
-

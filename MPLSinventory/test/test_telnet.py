@@ -1,7 +1,7 @@
 import unittest
 import os
-from telnet import ShowVersion, ShowIPInterfacesBrief
-# print ' no telnet test'
+from ipaddr import IPv4Address
+from telnet import ShowVersion, ShowIPInterfacesBrief, ShowIPBGPSum
 
 PATH = os.path.join('test', 'sample_telnet')
 IP1 = '192.168.0.92'
@@ -17,6 +17,8 @@ class TestParseShowVersion(unittest.TestCase):
         cls.sv2 = ShowVersion.load(IP2, PATH)
         cls.si1 = ShowIPInterfacesBrief.load(IP1, PATH)
         cls.si2 = ShowIPInterfacesBrief.load(IP2, PATH)
+        cls.sb1 = ShowIPBGPSum.load(IP1, PATH)
+        cls.sb2 = ShowIPBGPSum.load(IP2, PATH)
 
     def test_parse_show_version_model1(self):
         model = '2821'
@@ -80,3 +82,40 @@ class TestParseShowVersion(unittest.TestCase):
     def test_free_eth_ports_r2(self):
         r = 3
         self.assertEqual(r, self.si2.free_eth_ports)
+
+    def test_neighbors_show_ip_bgp_sum_r1(self):
+        neighbor_ips = ['10.0.10.2',
+                        '10.0.10.3',
+                        '192.168.100.1']
+        neighbors = self.sb1.neighbors
+        self.assertItemsEqual(neighbor_ips, neighbors.keys())
+
+    def test_ip_show_ip_bgp_sum_r1(self):
+        ip = IPv4Address('10.0.10.2')
+        neighbor = self.sb1.neighbors['10.0.10.2']
+        self.assertEqual(ip, neighbor.ip)
+
+    def test_remote_as_show_ip_bgp_sum_r1(self):
+        remote_as = 65012
+        neighbor = self.sb1.neighbors['10.0.10.2']
+        self.assertEqual(remote_as, neighbor.remote_as)
+
+    def test_up_down_show_ip_bgp_sum_r1(self):
+        up_down = 'never'
+        neighbor = self.sb1.neighbors['10.0.10.2']
+        self.assertEqual(up_down, neighbor.up_down)
+
+    def test_state_show_ip_bgp_sum_r1(self):
+        state = 'Idle (Admin)'
+        neighbor = self.sb1.neighbors['10.0.10.2']
+        self.assertEqual(state, neighbor.state)
+
+    def test_up_down_show_ip_bgp_sum_r2(self):
+        up_down = '3y12w'
+        neighbor = self.sb2.neighbors['192.168.101.1']
+        self.assertEqual(up_down, neighbor.up_down)
+
+    def test_state_show_ip_bgp_sum_r2(self):
+        state = 1620
+        neighbor = self.sb2.neighbors['192.168.101.1']
+        self.assertEqual(state, neighbor.state)
