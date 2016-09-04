@@ -135,7 +135,7 @@ class RegexStructure(object):
         if isinstance(obj, list):
             return [self._make_json(item) for item in obj]
         if hasattr(obj, "_asdict"):
-            # object is a namedtuple cover to ordereddict
+            # object is a namedtuple convert to ordereddict
             return OrderedDict(zip(obj._fields, (self._make_json(item) for item in obj)))
         if isinstance(obj, tuple):
             return tuple([self._make_json(item) for item in obj])
