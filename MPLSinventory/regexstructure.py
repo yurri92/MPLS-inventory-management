@@ -1,4 +1,5 @@
 import os
+from collections import OrderedDict
 from tools import search
 
 
@@ -133,6 +134,9 @@ class RegexStructure(object):
     def _make_json(self, obj):
         if isinstance(obj, list):
             return [self._make_json(item) for item in obj]
+        if hasattr(obj, "_asdict"):
+            # object is a namedtuple cover to ordereddict
+            return OrderedDict(zip(obj._fields, (self._make_json(item) for item in obj)))
         if isinstance(obj, tuple):
             return tuple([self._make_json(item) for item in obj])
         elif isinstance(obj, dict):
