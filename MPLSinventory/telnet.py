@@ -106,6 +106,9 @@ class ShowVersion(ParseShowCommand):
         super(ShowVersion, self).__init__(config)
 
 
+IP_interface = namedtuple('IP_interface', ['interface', 'ip', 'status'])
+
+
 class ShowIPInterfacesBrief(ParseShowCommand):
     """ Class that analyses and stores the ouput of 'show ip interfaces brief' on a Cisco device
 
@@ -140,19 +143,19 @@ class ShowIPInterfacesBrief(ParseShowCommand):
 
     def _set_interface_status(self):
         self.interface_status = {}
-        regex = r'^\s*(\S+)\s+\S+\s+(?:YES|NO)\s+\S+(.+)$'
-        for interface, status in search_all(regex, self.config):
+        regex = r'^\s*(\S+)\s+(\S+)\s+(?:YES|NO)\s+\S+(.+)$'
+        for interface, ip, status in search_all(regex, self.config):
             if 'admin' in status:
                 status = 'admin_shut'
             elif 'down' in status:
                 status = 'down'
             elif 'up' in status:
                 status = 'up'
-            self.interface_status[interface] = status
+            self.interface_status[interface] = IP_interface(interface, ip, status)
 
     def _set_free_eth_ports(self):
         self.free_eth_ports = 0
-        for interface, status in self.interface_status.items():
+        for interface, ip, status in self.interface_status.values():
             if ('Giga' in interface) or ('Fast' in interface):
                 if '.' not in interface:
                     if status in ['admin_shut', 'down']:

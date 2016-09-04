@@ -1,7 +1,7 @@
 import unittest
 import os
 from ipaddr import IPv4Address
-from telnet import ShowVersion, ShowIPInterfacesBrief, ShowIPBGPSum
+from telnet import ShowVersion, ShowIPInterfacesBrief, ShowIPBGPSum, IP_interface
 
 PATH = os.path.join('test', 'sample_telnet')
 IP1 = '192.168.0.92'
@@ -45,35 +45,35 @@ class TestParseShowVersion(unittest.TestCase):
         self.assertEqual(ios_version, self. sv2.ios_version)
 
     def test_parse_show_ip_interfaces_brief_r1(self):
-        r = {'GigabitEthernet0/0': 'up',
-             'GigabitEthernet0/0.100': 'up',
-             'GigabitEthernet0/0.200': 'up',
-             'GigabitEthernet0/0.300': 'up',
-             'GigabitEthernet0/0.400': 'up',
-             'GigabitEthernet0/1': 'up',
-             'GigabitEthernet0/1.101': 'up',
-             'Loopback1': 'up'}
-        self.assertItemsEqual(r, self.si1.interface_status)
+        r = {'GigabitEthernet0/0': IP_interface(interface='GigabitEthernet0/0', ip='unassigned', status='up'),
+             'GigabitEthernet0/0.100': IP_interface(interface='GigabitEthernet0/0.100', ip='10.0.10.2', status='up'),
+             'GigabitEthernet0/0.200': IP_interface(interface='GigabitEthernet0/0.200', ip='10.0.20.2', status='up'),
+             'GigabitEthernet0/0.300': IP_interface(interface='GigabitEthernet0/0.300', ip='10.0.30.2', status='up'),
+             'GigabitEthernet0/0.400': IP_interface(interface='GigabitEthernet0/0.400', ip='10.0.40.2', status='up'),
+             'GigabitEthernet0/1': IP_interface(interface='GigabitEthernet0/1', ip='unassigned', status='up'),
+             'GigabitEthernet0/1.101': IP_interface(interface='GigabitEthernet0/1.101', ip='192.168.100.2', status='up'),
+             'Loopback1': IP_interface(interface='Loopback1', ip='192.168.0.92', status='up')}
+        self.assertDictEqual(r, self.si1.interface_status)
 
     def test_parse_show_ip_interfaces_brief_r2(self):
-        r = {'ATM0': 'up',
-             'ATM0.1': 'up',
-             'Ethernet0': 'admin_shut',
-             'FastEthernet0': 'up',
-             'FastEthernet1': 'admin_shut',
-             'FastEthernet2': 'admin_shut',
-             'FastEthernet3': 'admin_shut',
-             'Loopback1': 'up',
-             'Virtual-Access1': 'up',
-             'Virtual-Access2': 'up',
-             'Virtual-Access3': 'up',
-             'Virtual-Template1': 'down',
-             'Vlan1': 'admin_shut',
-             'Vlan100': 'up',
-             'Vlan200': 'up',
-             'Vlan300': 'up',
-             'Vlan400': 'up'}
-        self.assertItemsEqual(r, self.si2.interface_status)
+        r = {'ATM0': IP_interface(interface='ATM0', ip='unassigned', status='up'),
+             'ATM0.1': IP_interface(interface='ATM0.1', ip='unassigned', status='up'),
+             'Ethernet0': IP_interface(interface='Ethernet0', ip='unassigned', status='admin_shut'),
+             'FastEthernet0': IP_interface(interface='FastEthernet0', ip='unassigned', status='up'),
+             'FastEthernet1': IP_interface(interface='FastEthernet1', ip='unassigned', status='admin_shut'),
+             'FastEthernet2': IP_interface(interface='FastEthernet2', ip='unassigned', status='admin_shut'),
+             'FastEthernet3': IP_interface(interface='FastEthernet3', ip='unassigned', status='admin_shut'),
+             'Loopback1': IP_interface(interface='Loopback1', ip='192.168.1.92', status='up'),
+             'Virtual-Access1': IP_interface(interface='Virtual-Access1', ip='unassigned', status='up'),
+             'Virtual-Access2': IP_interface(interface='Virtual-Access2', ip='192.168.1.92', status='up'),
+             'Virtual-Access3': IP_interface(interface='Virtual-Access3', ip='unassigned', status='up'),
+             'Virtual-Template1': IP_interface(interface='Virtual-Template1', ip='192.168.1.92', status='down'),
+             'Vlan1': IP_interface(interface='Vlan1', ip='unassigned', status='admin_shut'),
+             'Vlan100': IP_interface(interface='Vlan100', ip='10.1.10.2', status='up'),
+             'Vlan200': IP_interface(interface='Vlan200', ip='10.1.20.2', status='up'),
+             'Vlan300': IP_interface(interface='Vlan300', ip='10.1.30.2', status='up'),
+             'Vlan400': IP_interface(interface='Vlan400', ip='10.1.40.2', status='up')}
+        self.assertDictEqual(r, self.si2.interface_status)
 
     def test_free_eth_ports_r1(self):
         r = 0
