@@ -120,15 +120,14 @@ class ShowIPInterfacesBrief(ParseShowCommand):
         output_show_ip_interfaces_brief = [
             'Interface                  IP-Address      OK? Method Status                Protocol',
             'GigabitEthernet0/0         unassigned      YES NVRAM  up                    up',
-            'Loopback1                  192.168.0.92    YES NVRAM  up                    up',
-            'router-1-eth']
+            'Loopback1                  192.168.0.92    YES NVRAM  up                    up']
 
         c = ShowIPInterfacesBrief(output_show_ip_interfaces_brief)
 
-        c.hostname -> 'router-1-eth'
-
-        c.interfaces_status -> { 'GigabitEthernet0/0': 'up',
-                                'Loopback1': 'up'}
+        c.interface_status -> {'GigabitEthernet0/0': IP_interface(interface='GigabitEthernet0/0',
+                                                                  ip='unassigned', status='up'),
+                               'Loopback1': IP_interface(interface='Loopback1',
+                                                         ip='192.168.0.92', status='up')}
 
         The 'load' method looks in the 'int' subdirectory of the path=''.
        """
@@ -139,7 +138,6 @@ class ShowIPInterfacesBrief(ParseShowCommand):
         super(ShowIPInterfacesBrief, self).__init__(config)
         self._set_interface_status()
         self._set_free_eth_ports()
-        self.hostname = self.config[-1]
 
     def _set_interface_status(self):
         self.interface_status = {}
