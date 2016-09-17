@@ -160,6 +160,12 @@ class TestRouter(unittest.TestCase):
         self.r1.add_telnet_state(IP1)
         self.assertEqual(state_found, self.r1.state_found)
 
+    def test_interface_status(self):
+        status = 'up'
+        interface = 'GigabitEthernet0/0.100'
+        self.r1.add_telnet_state(IP1)
+        self.assertEqual(status, self.r1.interfaces[interface].status)
+
 
 class TestMPLSRouter(unittest.TestCase):
     config = None
@@ -225,6 +231,18 @@ class TestMPLSRouter_ATM(unittest.TestCase):
         interface = self.r2.interfaces['Virtual-Template1']
         parent = 'ATM0.1'
         self.assertEqual(parent, interface.parent.name)
+
+    def test_interface_status1(self):
+        status = 'admin_shut'
+        interface = 'FastEthernet1'
+        self.r2.add_telnet_state(IP2)
+        self.assertEqual(status, self.r2.interfaces[interface].status)
+
+    def test_interface_status2(self):
+        status = 'down'
+        interface = 'Virtual-Template1'
+        self.r2.add_telnet_state(IP2)
+        self.assertEqual(status, self.r2.interfaces[interface].status)
 
 
 if __name__ == '__main__':

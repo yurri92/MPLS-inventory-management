@@ -2,7 +2,7 @@ from __future__ import print_function
 import re
 from ipaddr import IPv4Network, IPv4Address
 from regexstructure import RegexStructure
-from telnet import ShowVersion
+from telnet import ShowVersion, ShowIPInterfacesBrief, ShowIPBGPSum
 from tools import search, search_all, assign_attr_if_better
 
 
@@ -133,6 +133,7 @@ class Interface(RegexStructure):
     def __init__(self, config):
         super(Interface, self).__init__(config)
         self.parent = ''
+        self.status = ''
         self._load_interface_details()    # (self)?
 
     def _load_interface_details(self):
@@ -179,13 +180,15 @@ class Router(RegexStructure):
     def add_telnet_state(self, ip):
         self.state_found = False
         self.show_version = ShowVersion.load(ip, self.telnet_dir)
+        self.show_ip_interfaces_brief = ShowIPInterfacesBrief.load(ip, self.telnet_dir)
+        self.show_ip_bgp_sum = ShowIPBGPSum.load(ip, self.telnet_dir)
         if self.show_version:
             if self.hostname == self.show_version.hostname:
                 self.state_found = True
-
-
-
-
+        if self.state_found:
+            self._set_interface_status()
+            self._set_bgp_status()
+            self._set_version()
 
     def _set_parent_interfaces(self):
         """Sets the parent attribute of an interface to the name of the parent interface.
@@ -221,6 +224,18 @@ class Router(RegexStructure):
                     elif interface1.dialer_pool == interface2.dial_pool_number:
                         self.interfaces[name1].parent = interface2
                         break
+
+    def _set_interface_status(self):
+        interface_status = self.show_ip_interfaces_brief.interface_status
+        for interface in self.interfaces.keys():
+            if interface in interface_status.keys():
+                self.interfaces[interface].status = interface_status[interface].status
+
+    def _set_bgp_status(self):
+        pass
+
+    def _set_version(self):
+        pass
 
 
 class MPLSRouter(Router):
