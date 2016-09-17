@@ -2,6 +2,7 @@ from __future__ import print_function
 import re
 from ipaddr import IPv4Network, IPv4Address
 from regexstructure import RegexStructure
+from telnet import ShowVersion
 from tools import search, search_all, assign_attr_if_better
 
 
@@ -169,9 +170,22 @@ class Router(RegexStructure):
         'bgp': ('router bgp\s+\d+', RouterBGP)
         }
 
+    telnet_dir = 'telnet'
+
     def __init__(self, config):
         super(Router, self).__init__(config)
         self._set_parent_interfaces()
+
+    def add_telnet_state(self, ip):
+        self.state_found = False
+        self.show_version = ShowVersion.load(ip, self.telnet_dir)
+        if self.show_version:
+            if self.hostname == self.show_version.hostname:
+                self.state_found = True
+
+
+
+
 
     def _set_parent_interfaces(self):
         """Sets the parent attribute of an interface to the name of the parent interface.

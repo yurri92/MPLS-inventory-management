@@ -3,12 +3,17 @@ import os
 import sys
 from router import Router, MPLSRouter
 from ipaddr import IPv4Network, IPv4Address
+from telnet import ShowVersion, ShowIPInterfacesBrief
 
 print sys.version
 
 PATH = os.path.join('test', 'sample_configs')
 FILENAME_ETH = 'router_1_eth_conf.cfg'
 FILENAME_ATM = 'router_2_atm_conf.cfg'
+
+IP1 = '192.168.0.92'
+IP2 = '192.168.1.92'
+Router.telnet_dir = os.path.join('test', 'sample_telnet')
 
 
 class TestRouter(unittest.TestCase):
@@ -149,6 +154,11 @@ class TestRouter(unittest.TestCase):
         bgp_neighbors = [(IPv4Address('10.0.10.3'), 64512),
                          (IPv4Address('192.168.100.1'), 10001)]
         self.assertItemsEqual(bgp_neighbors, self.r1.bgp.neighbors)
+
+    def test_add_telnet_state(self):
+        state_found = True
+        self.r1.add_telnet_state(IP1)
+        self.assertEqual(state_found, self.r1.state_found)
 
 
 class TestMPLSRouter(unittest.TestCase):
