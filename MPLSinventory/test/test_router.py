@@ -162,7 +162,7 @@ class TestRouter(unittest.TestCase):
 
     def test_interface_status(self):
         status = 'up'
-        interface = 'GigabitEthernet0/0.100'
+        interface = 'GigabitEthernet0/1.101'
         self.r1.add_telnet_state(IP1)
         self.assertEqual(status, self.r1.interfaces[interface].status)
 
