@@ -143,12 +143,22 @@ class ShowIPInterfacesBrief(ParseShowCommand):
         self.interface_status = {}
         regex = r'^\s*(\S+)\s+(\S+)\s+(?:YES|NO)\s+\S+(.+)$'
         for interface, ip, status in search_all(regex, self.config):
+            # find status
             if 'admin' in status:
                 status = 'admin_shut'
             elif 'down' in status:
                 status = 'down'
             elif 'up' in status:
                 status = 'up'
+
+            # if interfacename is abbreviated, replace with full interfacename
+            # Gi0/0/0.101 -> GigabitEthernet0/0/0.101
+            # Te0/0/1  -> TenGigabitEthernet0/0/1
+            if interface[2].isdigit() and interface[:2] == 'Gi':
+                interface = 'GigabitEthernet' + interface[2:]
+            if interface[2].isdigit() and interface[:2] == 'Te':
+                interface = 'TenGigabitEthernet' + interface[2:]
+
             self.interface_status[interface] = IP_interface(interface, ip, status)
 
     def _set_free_eth_ports(self):
