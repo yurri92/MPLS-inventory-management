@@ -73,19 +73,25 @@ def list_files(regex, path):
 def read_files_to_objects(path, result_type, regex=r'(.+)', id='', verbose=False):
     result = {}
     file_names = list_files(regex, path)
+    if verbose:
+        file_names = tqdm(file_names)
     total = len(file_names)
     for i, file_name in enumerate(file_names, 1):
         if verbose:
-            print("opening : {}/{} {}/{}...".format(i, total, path, file_name), end="")
+            pass
+            # print("opening : {}/{} {}/{}...".format(i, total, path, file_name), end="")
         value = result_type.load(file_name, path=path)
         if value:
             key = getattr(value, id, file_name)
             result[key] = value
+            # del value.config
             if verbose:
-                print("parsed config for :{}".format(key))
+                pass
+                # print("parsed config for :{}".format(key))
         else:
             if verbose:
-                print("skipping")
+                pass
+                # print("skipping")
     return result
 
 
@@ -292,7 +298,7 @@ def combine2(dict1, dict2, match_function, key_prepend=''):
         dict1['mismatch'+str(i)] = json_object1
 
 
-def combine3(dict1, dict2, score_function, key_prepend='', add_unused=True, verbose=False):
+def combine3(dict1, dict2, score_function, key_prepend='', add_unused=True, verbose=False, unknown='unknown'):
     """combine best match from dict2 to dict1 based on a score.
     For each item in dict1 the best possible candidate from dict2 is combined.
 
@@ -349,12 +355,24 @@ def combine3(dict1, dict2, score_function, key_prepend='', add_unused=True, verb
         copy_json_object(json_object1, json_object2, key_prepend=key_prepend)
 
     if add_unused:
+        # unused values from dict2 will be added in dict1 with a key 'unknown##'
+        # where ## is a sequence nr
+        # first find any 'unknown##' keys in dict1
+        # and determine the starting value
+        unknowns_in_keys1 = [k for k in keys1 if k.startswith(unknown)]
+        l = len(unknown)
+        unknown_numbers_in_keys1 = [int(k[l:]) for k in unknowns_in_keys1]
+        if unknown_numbers_in_keys1:
+            start_unknown_value = max(unknown_numbers_in_keys1)+1
+        else:
+            start_unknown_value = 1
+
         unused_keys2 = list(set(keys2)-set(used_keys2))
-        for i, key2 in enumerate(unused_keys2):
+        for i, key2 in enumerate(unused_keys2, start=start_unknown_value):
             json_object1 = copy(empty_json_object1)
             json_object2 = dict2[key2]
             copy_json_object(json_object1, json_object2, key_prepend=key_prepend)
-            dict1['unknown'+str(i)] = json_object1
+            dict1[unknown+str(i)] = json_object1
 
 
 def column(matrix, i):

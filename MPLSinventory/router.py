@@ -182,7 +182,11 @@ class Router(RegexStructure):
         self.show_version = ShowVersion.load(ip, self.telnet_dir)
         self.show_ip_interfaces_brief = ShowIPInterfacesBrief.load(ip, self.telnet_dir)
         self.show_ip_bgp_sum = ShowIPBGPSum.load(ip, self.telnet_dir)
+
         if self.show_version:
+            del self.show_version.config
+            del self.show_ip_interfaces_brief.config
+            del self.show_ip_bgp_sum.config
             if self.hostname == self.show_version.hostname:
                 self.state_found = True
         if self.state_found:
