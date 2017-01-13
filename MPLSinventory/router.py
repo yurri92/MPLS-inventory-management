@@ -236,7 +236,12 @@ class Router(RegexStructure):
                 self.interfaces[interface].status = interface_status[interface].status
 
     def _set_bgp_status(self):
-        pass
+        bgp_neighbor_status = self.show_ip_bgp_sum.neighbors
+        if bgp_neighbor_status:
+            for neighbor, asnr in self.bgp.neighbors:
+                if str(neighbor) in bgp_neighbor_status.keys():
+                    pass
+
 
     def _set_version(self):
         pass

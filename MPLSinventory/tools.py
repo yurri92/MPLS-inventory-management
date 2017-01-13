@@ -73,25 +73,25 @@ def list_files(regex, path):
 def read_files_to_objects(path, result_type, regex=r'(.+)', id='', verbose=False):
     result = {}
     file_names = list_files(regex, path)
-    if verbose:
-        file_names = tqdm(file_names)
+    # if verbose:
+    #     file_names = tqdm(file_names)
     total = len(file_names)
     for i, file_name in enumerate(file_names, 1):
         if verbose:
-            pass
-            # print("opening : {}/{} {}/{}...".format(i, total, path, file_name), end="")
+            # pass
+            print("opening : {}/{} {}/{}...".format(i, total, path, file_name), end="")
         value = result_type.load(file_name, path=path)
         if value:
             key = getattr(value, id, file_name)
             result[key] = value
             # del value.config
             if verbose:
-                pass
-                # print("parsed config for :{}".format(key))
+                # pass
+                print("parsed config for :{}".format(key))
         else:
             if verbose:
-                pass
-                # print("skipping")
+                # pass
+                print("skipping")
     return result
 
 
