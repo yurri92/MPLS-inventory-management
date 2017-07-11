@@ -2,7 +2,7 @@ import os
 from collections import namedtuple
 from ipaddr import IPv4Address
 from regexstructure import RegexStructure
-from tools import search_all
+from tools import search, search_all
 
 """Module that provides classes to analyse and store the output of CLI commands
    on network device."""
@@ -104,6 +104,48 @@ class ShowVersion(ParseShowCommand):
 
     def __init__(self, config):
         super(ShowVersion, self).__init__(config)
+        self._find_ios()
+
+    def _find_ios(self):
+        x = self.ios_version
+        if len(x) == 5:
+            self.ios = x[0] + "." + x[1] + "(" + x[2] + ")" + x[3] + x[4]
+        else:
+            self.ios = ""
+
+
+class ShowInventory(ParseShowCommand):
+    # add docstring
+    _showcommand = 'inventory'
+    # _single_attributes = {
+    #     'chassis_vid': (r'NAME:\s+"Chassis".+\n.+VID:\s+(.+),', str)
+    # }
+
+    def __init__(self, config):
+        super(ShowInventory, self).__init__(config)
+        self._find_chassis_vid()
+
+    def _find_chassis_vid(self):
+        # find line for chassis VID
+        vid_line_nr = 0
+        regex = r'^\s*NAME:\s+"(Chassis)"'
+        for i, line in enumerate(self.config):
+            if search(regex, line):
+                vid_line_nr = i+1
+                break
+        regex = r'.+VID:\s+(.+),'
+        self.chassis_vid = search(regex, self.config[vid_line_nr])
+
+
+class ShowStandby(ParseShowCommand):
+    # add docstring
+    _showcommand = 'standby'
+    _single_attributes = {
+        'standby_status': (r'^\s+State\s+is\s+(\w+)\s*$', str)
+    }
+
+    def __init__(self, config):
+        super(ShowStandby, self).__init__(config)
 
 
 IP_interface = namedtuple('IP_interface', ['interface', 'ip', 'status'])

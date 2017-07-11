@@ -210,9 +210,11 @@ def save_dict_as_csv(jdict, filename, attributes=None, sort_by=None, group_by=No
                 value = ''
                 if attribute in item.keys():
                     value = item[attribute]
-                    # if isinstance(value, list):
-                    #    value = '; '.join(value)      # TODO doesnt work if value is a list of lists or tuples
+                    #  if isinstance(value, list):
+                    #   value = '; '.join(value)      # TODO doesnt work if value is a list of lists or tuples
                 row.append(value)
+            if "lan_ips" in item.keys():
+                row.extend(item["lan_ips"])
             f.writerow(row)
 
 
