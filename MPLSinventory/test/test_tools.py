@@ -86,9 +86,6 @@ class TestTools(unittest.TestCase):
                                                           attributes=self.show_int_attributes)
         tools.combine(showversions_d, showinterfaces_d, match_show_commands)
         keys = ['hostname', 'ip', 'free_eth_ports', 'model', 'serial', 'ios_version', 'ios']
-        print(keys)
-        from pprint import pprint
-        pprint(showversions_d)
         showversion = showversions_d['192.168.0.92']
         self.assertItemsEqual(keys, showversion.keys())
 
