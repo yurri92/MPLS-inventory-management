@@ -6,7 +6,7 @@ from router import Router, MPLSRouter
 from ipaddr import IPv4Network, IPv4Address
 from telnet import ShowVersion, ShowIPInterfacesBrief
 
-print sys.version
+print(sys.version)
 
 PATH = os.path.join('test', 'sample_configs')
 FILENAME_ETH = 'router_1_eth_conf.cfg'
