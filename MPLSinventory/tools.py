@@ -24,12 +24,12 @@ def search(regex, thing):
             result = search(regex, item)
             if result:
                 if isinstance(result, tuple):
-                    if reduce(lambda x, y: bool(x) or bool(y), result):   # test if tuple has results
+                    if any(result):  # reduce(lambda x, y: bool(x) or bool(y), result):   # test if tuple has results
                         break
                 else:           # if result is not a tuple
                     break
 
-    if isinstance(thing, str) or isinstance(thing, unicode):
+    if isinstance(thing, str):   # or isinstance(thing, unicode):
         if regex not in COMPILED_REGEXES.keys():
             COMPILED_REGEXES[regex] = re.compile(regex)
         compiled_regex = COMPILED_REGEXES[regex]
@@ -61,7 +61,7 @@ def search_all(regex, thing):
                 if r:
                     result += [r]
             if isinstance(r, tuple):
-                if reduce(lambda x, y: bool(x) or bool(y), r):   # test if tuple has results
+                if any(r):     # reduce(lambda x, y: bool(x) or bool(y), r):   # test if tuple has results
                     result += [r]
     return result
 
@@ -176,9 +176,9 @@ def save_dict_as_json(dict, filename):
 
 
 def save_dict_as_csv(jdict, filename, attributes=None, sort_by=None, group_by=None):
+    keylist = list(jdict.keys())
     if attributes is None:
-        attributes = jdict[jdict.keys()[0]].keys()
-    keylist = jdict.keys()
+        attributes = list(jdict[keylist[0]].keys())
     if sort_by:
         emptys = [key for key in keylist if not jdict[key][sort_by]]
         keylist = [key for key in keylist if jdict[key][sort_by]]
@@ -200,7 +200,7 @@ def save_dict_as_csv(jdict, filename, attributes=None, sort_by=None, group_by=No
                 for key in group:
                     keylist2.remove(key)
 
-    with open(filename, 'wb') as fp:
+    with open(filename, 'w') as fp:
         f = csv.writer(fp)
         f.writerow(attributes)
         for key in keylist:
@@ -231,7 +231,7 @@ def create_empty_template(json_object):
             if i:
                 r.append(i)
         return r
-    if isinstance(json_object, str) or isinstance(json_object, unicode):
+    if isinstance(json_object, str): # or isinstance(json_object, unicode):
         return ''
     if isinstance(json_object, int) or isinstance(json_object, float):
         return 0
@@ -259,7 +259,8 @@ def combine(dict1, dict2, match_function, key_prepend='', verbose=False):
     - ?? mismatching items will be stored in dict1['mismatch']
     - todo: add not used items from dict2
     """
-    empty_json_object2 = create_empty_template(dict2[dict2.keys()[0]])
+    # empty_json_object2 = create_empty_template(dict2[dict2.keys()[0]])
+    empty_json_object2 = create_empty_template(dict2[list(dict2.keys())[0]])
 
     if verbose:
         keylist = tqdm(dict1.keys())
@@ -282,9 +283,11 @@ def combine2(dict1, dict2, match_function, key_prepend=''):
     - ?? mismatching items will be stored in dict1['mismatch']
     - todo: add not used items from dict2
     """
-    keys2 = dict2.keys()
-    empty_json_object2 = create_empty_template(dict2.values()[0])
-    empty_json_object1 = create_empty_template(dict1.values()[0])
+    keys2 = list(dict2.keys())
+    # empty_json_object1 = create_empty_template(dict1.values()[0])
+    # empty_json_object2 = create_empty_template(dict2.values()[0])
+    empty_json_object2 = create_empty_template(dict2[list(dict2.keys())[0]])
+    empty_json_object1 = create_empty_template(dict1[list(dict1.keys())[0]])
     for key1, json_object1 in dict1.items():
         json_object2 = empty_json_object2
         key2 = match_function(json_object1, dict2)
@@ -312,11 +315,12 @@ def combine3(dict1, dict2, score_function, key_prepend='', add_unused=True, verb
     If not, the canidate in dict2 has a better fit to another dict1 item.
 
     """
-
-    empty_json_object1 = create_empty_template(dict1.values()[0])
-    empty_json_object2 = create_empty_template(dict2.values()[0])
-    keys1 = dict1.keys()
-    keys2 = dict2.keys()
+    empty_json_object1 = create_empty_template(dict1[list(dict1.keys())[0]])
+    empty_json_object2 = create_empty_template(dict2[list(dict2.keys())[0]])
+    # empty_json_object1 = create_empty_template(dict1.values()[0])
+    # empty_json_object2 = create_empty_template(dict2.values()[0])
+    keys1 = list(dict1.keys())
+    keys2 = list(dict2.keys())
     used_keys2 = []
     scores_matrix = []
     candidates = {}

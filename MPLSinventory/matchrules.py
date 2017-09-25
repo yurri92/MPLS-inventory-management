@@ -1,3 +1,4 @@
+from __future__ import print_function
 """ Match rules for matching dictionary entries.
     can be used by tools.combine
     match_function(json_object, dict2) will return the best matching json_object from dict2 """

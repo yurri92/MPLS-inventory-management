@@ -1,8 +1,11 @@
+from __future__ import print_function
 import os
+import sys
 from collections import namedtuple
-from ipaddr import IPv4Address
-from regexstructure import RegexStructure
-from tools import search, search_all
+from MPLSinventory.regexstructure import RegexStructure
+from MPLSinventory.tools import search, search_all
+from MPLSinventory.ip_address_tools import IPv4Address
+
 
 """Module that provides classes to analyse and store the output of CLI commands
    on network device."""
