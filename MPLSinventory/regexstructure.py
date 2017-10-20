@@ -1,6 +1,7 @@
+from __future__ import print_function
 import os
 from collections import OrderedDict
-from tools import search
+from MPLSinventory.tools import search
 
 
 def search_configlets(key, config, delimiter='!'):
@@ -141,7 +142,7 @@ class RegexStructure(object):
             return tuple([self._make_json(item) for item in obj])
         elif isinstance(obj, dict):
             return {k: self._make_json(v) for k, v in obj.items()}
-        elif isinstance(obj, str) or isinstance(obj, unicode):
+        elif isinstance(obj, str): # or isinstance(obj, unicode):
             return obj
         elif isinstance(obj, int) or isinstance(obj, float):
             return obj

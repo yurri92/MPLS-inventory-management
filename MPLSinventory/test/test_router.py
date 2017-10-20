@@ -2,19 +2,26 @@ from __future__ import print_function
 import unittest
 import os
 import sys
-from router import Router, MPLSRouter
-from ipaddr import IPv4Network, IPv4Address
-from telnet import ShowVersion, ShowIPInterfacesBrief
+import six
+import q
+from MPLSinventory.router import Router, MPLSRouter
+from MPLSinventory.telnet import ShowVersion, ShowIPInterfacesBrief
+from MPLSinventory.ip_address_tools import IPv4Address, IPv4Interface
+
 
 print(sys.version)
 
-PATH = os.path.join('test', 'sample_configs')
+
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+
+
+PATH = os.path.join(BASE_PATH, 'sample_configs')
 FILENAME_ETH = 'router_1_eth_conf.cfg'
 FILENAME_ATM = 'router_2_atm_conf.cfg'
 
 IP1 = '192.168.0.92'
 IP2 = '192.168.1.92'
-Router.telnet_dir = os.path.join('test', 'sample_telnet')
+Router.telnet_dir = os.path.join(BASE_PATH, 'sample_telnet')
 
 
 class TestRouter(unittest.TestCase):
@@ -26,10 +33,9 @@ class TestRouter(unittest.TestCase):
 
     def test_load(self):
         path = os.path.join(PATH, FILENAME_ETH)
-        file = open(path, 'rb')
-        config = file.readlines()
+        with open(path, 'r') as fp:
+            config = fp.readlines()
         config = [l.rstrip() for l in config]
-        file.close
         self.assertEqual(self.r1.config, config)
 
     def test_hostname(self):
@@ -42,7 +48,8 @@ class TestRouter(unittest.TestCase):
                            'GigabitEthernet0/0.400', 'GigabitEthernet0/1',
                            'GigabitEthernet0/1.101', 'GigabitEthernet0/2']
         interfaces = self.r1.interfaces
-        self.assertItemsEqual(interfaces.keys(), interface_names)
+        # self.assertItemsEqual(interfaces.keys(), interface_names)
+        six.assertCountEqual(self, interfaces.keys(), interface_names)
 
     def test_interface_configlet(self):
         configlet = ['interface GigabitEthernet0/1.101',
@@ -55,14 +62,15 @@ class TestRouter(unittest.TestCase):
         self.assertSequenceEqual(i.config, configlet)
 
     def test_interface_ip(self):
-        ip = IPv4Network('192.168.100.2/255.255.255.252')
+        ip = IPv4Interface('192.168.100.2/255.255.255.252')
         i = self.r1.interfaces['GigabitEthernet0/1.101']
         self.assertEqual(str(ip), str(i.ip))
 
     def test_interface_helpers(self):
         helpers = [IPv4Address('10.100.1.2'), IPv4Address('10.100.1.1')]
         i = self.r1.interfaces['GigabitEthernet0/0.100']
-        self.assertItemsEqual(i.helpers, helpers)
+        # self.assertItemsEqual(i.helpers, helpers)
+        six.assertCountEqual(self, i.helpers, helpers)
 
     def test_interface_vlan(self):
         vlan = 100
@@ -79,7 +87,8 @@ class TestRouter(unittest.TestCase):
                             'SAMPLE-QOS-OUT',
                             'SAMPLE-SHAPER-OUT']
         qos_policies = self.r1.qos_policies
-        self.assertItemsEqual(qos_policies.keys(), qos_policy_names)
+        # self.assertItemsEqual(qos_policies.keys(), qos_policy_names)
+        six.assertCountEqual(self, qos_policies.keys(), qos_policy_names)
 
     def test_qos_policy_configlet(self):
         configlet = [
@@ -104,28 +113,28 @@ class TestRouter(unittest.TestCase):
                     ' class class-default',
                     '  bandwidth 1211',
                     '  random-detect']
-        q = self.r1.qos_policies['SAMPLE-QOS-OUT']
-        self.assertSequenceEqual(q.config, configlet)
+        qos = self.r1.qos_policies['SAMPLE-QOS-OUT']
+        self.assertSequenceEqual(qos.config, configlet)
 
     def test_qos_bandwidth(self):
         bandwidth = 18810
-        q = self.r1.qos_policies['SAMPLE-QOS-OUT']
-        self.assertEqual(bandwidth, q.qos_bandwidth)
+        qos = self.r1.qos_policies['SAMPLE-QOS-OUT']
+        self.assertEqual(bandwidth, qos.qos_bandwidth)
 
     def test_shaper_bandwidth(self):
         bandwidth = 19800
-        q = self.r1.qos_policies['SAMPLE-SHAPER-OUT']
-        self.assertEqual(bandwidth, q.shaper)
+        qos = self.r1.qos_policies['SAMPLE-SHAPER-OUT']
+        self.assertEqual(bandwidth, qos.shaper)
 
     def test_sub_policy(self):
         sub_policy = 'SAMPLE-QOS-OUT'
-        q = self.r1.qos_policies['SAMPLE-SHAPER-OUT']
-        self.assertEqual(sub_policy, q.sub_policy)
+        qos = self.r1.qos_policies['SAMPLE-SHAPER-OUT']
+        self.assertEqual(sub_policy, qos.sub_policy)
 
     def test_priority_class(self):
         priority_class = 'realtime_output'
-        q = self.r1.qos_policies['SAMPLE-QOS-OUT']
-        self.assertEqual(priority_class, q.priority_class.name)
+        qos = self.r1.qos_policies['SAMPLE-QOS-OUT']
+        self.assertEqual(priority_class, qos.priority_class.name)
 
     def test_bgp_config(self):
         bgp_config = ['router bgp 64512',
@@ -154,7 +163,8 @@ class TestRouter(unittest.TestCase):
     def test_bgp_neighbors(self):
         bgp_neighbors = [(IPv4Address('10.0.10.3'), 64512),
                          (IPv4Address('192.168.100.1'), 10001)]
-        self.assertItemsEqual(bgp_neighbors, self.r1.bgp.neighbors)
+        # self.assertItemsEqual(bgp_neighbors, self.r1.bgp.neighbors)
+        six.assertCountEqual(self, bgp_neighbors, self.r1.bgp.neighbors)
 
     def test_add_telnet_state(self):
         state_found = True
@@ -174,9 +184,8 @@ class TestMPLSRouter(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         path = os.path.join(PATH, FILENAME_ETH)
-        file = open(path, 'rb')
-        cls.config = file.readlines()
-        file.close
+        with open(path, 'r') as fp:
+            cls.config = fp.readlines()
         cls.r1 = MPLSRouter(cls.config)
 
     def test_local_as(self):
@@ -226,7 +235,8 @@ class TestMPLSRouter_ATM(unittest.TestCase):
                            'FastEthernet3', 'ATM0.1', 'Vlan100',
                            'Loopback1']
         interfaces = self.r2.interfaces
-        self.assertItemsEqual(interfaces.keys(), interface_names)
+        # self.assertItemsEqual(interfaces.keys(), interface_names)
+        six.assertCountEqual(self, interfaces.keys(), interface_names)
 
     def test_parent_interface(self):
         interface = self.r2.interfaces['Virtual-Template1']

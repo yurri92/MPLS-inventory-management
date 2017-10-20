@@ -1,9 +1,9 @@
 from __future__ import print_function
 import re
-from ipaddr import IPv4Network, IPv4Address
-from regexstructure import RegexStructure
-from telnet import ShowVersion, ShowIPInterfacesBrief, ShowIPBGPSum
-from tools import search, search_all, assign_attr_if_better
+from MPLSinventory.regexstructure import RegexStructure
+from MPLSinventory.telnet import ShowVersion, ShowIPInterfacesBrief, ShowIPBGPSum
+from MPLSinventory.tools import search, search_all, assign_attr_if_better
+from MPLSinventory.ip_address_tools import IPv4Address, IPv4Interface
 
 
 class RouterBGP(RegexStructure):
@@ -111,7 +111,7 @@ class Interface(RegexStructure):
         'name':               (r'^interface\s(\S+)\s*.*$', str),
         'description':        (r'^\s*description\s+(.+)$', str),
         'ip':                 (r'^\s*ip\saddress\s(\d+\.\d+\.\d+\.\d+\s+\d+\.\d+\.\d+\.\d+)\s*$',
-                               lambda ip: IPv4Network(re.sub(r'\s+', '/', ip))),
+                               lambda ip: IPv4Interface(re.sub(r'\s+', '/', ip))),
         'ip_unnumbered':      (r'^\s*ip\s+unnumbered\s+(\S+)\s*$', str),
         'ip_negotiated':      (r'^\s*ip\saddress\s(negotiated)\s*$', str),
         'admin_bandwidth':    (r'^\s*bandwidth\s+(\d+)', int),
@@ -242,7 +242,6 @@ class Router(RegexStructure):
                 if str(neighbor) in bgp_neighbor_status.keys():
                     pass
 
-
     def _set_version(self):
         pass
 
@@ -256,7 +255,7 @@ class MPLSRouter(Router):
        - a speed
        - redundancy"""
 
-    service_provider_as_nrs = xrange(1, 64152)
+    service_provider_as_nrs = range(1, 64152)
 
     # example how to extend attributes
     _single_attributes = {
@@ -284,8 +283,7 @@ class MPLSRouter(Router):
         bgp_wan_ip = self._bgp_wan_neighbor()
         if bgp_wan_ip:
             for name, interface in self.interfaces.items():
-                network = interface.ip
-                if network and (bgp_wan_ip in network):
+                if interface.ip and bgp_wan_ip in interface.ip.network:
                     wan = interface
         return wan
 

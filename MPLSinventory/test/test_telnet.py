@@ -1,9 +1,13 @@
+from __future__ import print_function
 import unittest
 import os
-from ipaddr import IPv4Address
-from telnet import ShowVersion, ShowIPInterfacesBrief, ShowIPBGPSum, IP_interface
+import six
+from MPLSinventory.telnet import ShowVersion, ShowIPInterfacesBrief, ShowIPBGPSum, IP_interface
+from MPLSinventory.ip_address_tools import IPv4Address
 
-PATH = os.path.join('test', 'sample_telnet')
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+
+PATH = os.path.join(BASE_PATH, 'sample_telnet')
 IP1 = '192.168.0.92'
 IP2 = '192.168.1.92'
 
@@ -88,7 +92,8 @@ class TestParseShowVersion(unittest.TestCase):
                         '10.0.10.3',
                         '192.168.100.1']
         neighbors = self.sb1.neighbors
-        self.assertItemsEqual(neighbor_ips, neighbors.keys())
+        # self.assertItemsEqual(neighbor_ips, neighbors.keys())
+        six.assertCountEqual(self, neighbor_ips, neighbors.keys())
 
     def test_ip_show_ip_bgp_sum_r1(self):
         ip = IPv4Address('10.0.10.2')
@@ -119,3 +124,6 @@ class TestParseShowVersion(unittest.TestCase):
         state = 1620
         neighbor = self.sb2.neighbors['192.168.101.1']
         self.assertEqual(state, neighbor.state)
+
+if __name__ == '__main__':
+    unittest.main()

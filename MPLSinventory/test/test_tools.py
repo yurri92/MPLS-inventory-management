@@ -1,18 +1,21 @@
+from __future__ import print_function
 import unittest
 import os
 import json
-import tools
-from router import MPLSRouter
-from telnet import ShowVersion, ShowIPInterfacesBrief
-from matchrules import match_telnet_to_router, match_show_commands
+import six
+import MPLSinventory.tools as tools
+from MPLSinventory.router import MPLSRouter
+from MPLSinventory.telnet import ShowVersion, ShowIPInterfacesBrief
+from MPLSinventory.matchrules import match_telnet_to_router, match_show_commands
 
 # test combine -> create json
 
 # test classify -> based on json
 
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 
-TELNET_DIR = os.path.join('test', 'sample_telnet')
-ROUTER_DIR = os.path.join('test', 'sample_configs')
+TELNET_DIR = os.path.join(BASE_PATH, 'sample_telnet')
+ROUTER_DIR = os.path.join(BASE_PATH, 'sample_configs')
 
 
 class TestTools(unittest.TestCase):
@@ -36,15 +39,15 @@ class TestTools(unittest.TestCase):
 
     def test_router_list_hostnames_as_keys(self):
         hostnames = ['router-1-eth', 'router-2-atm']
-        self.assertItemsEqual(hostnames, self.routers.keys())
+        six.assertCountEqual(self, hostnames, self.routers.keys())
 
     def test_showversions_list_ips_as_keys(self):
         ips = ['192.168.0.92', '192.168.1.92']
-        self.assertItemsEqual(ips, self.showversions.keys())
+        six.assertCountEqual(self, ips, self.showversions.keys())
 
     def test_showinterfaces_list_filenames_as_keys(self):
         ips = ['192.168.0.92.txt', '192.168.1.92.txt']
-        self.assertItemsEqual(ips, self.showinterfaces.keys())
+        six.assertCountEqual(self, ips, self.showinterfaces.keys())
 
     def test_router_list_type(self):
         router = self.routers['router-1-eth']
@@ -53,12 +56,12 @@ class TestTools(unittest.TestCase):
     def test_create_router_dict_hostnames(self):
         routers_d = tools.create_dict_from_objects(self.routers, attributes=self.router_attributes)
         hostnames = ['router-1-eth', 'router-2-atm']
-        self.assertItemsEqual(hostnames, routers_d.keys())
+        six.assertCountEqual(self, hostnames, routers_d.keys())
 
     def test_create_router_dict_attributes(self):
         routers_d = tools.create_dict_from_objects(self.routers, attributes=self.router_attributes)
         router = routers_d['router-1-eth']
-        self.assertItemsEqual(self.router_attributes, router.keys())
+        six.assertCountEqual(self, self.router_attributes, router.keys())
 
     def test_router1_dict_wan_interface(self):
         routers_d = tools.create_dict_from_objects(self.routers, attributes=self.router_attributes)
@@ -78,7 +81,7 @@ class TestTools(unittest.TestCase):
                                                           attributes=self.show_int_attributes)
         tools.combine(showversions_d, showinterfaces_d, match_show_commands)
         keys = ['192.168.0.92', '192.168.1.92']
-        self.assertItemsEqual(keys, showversions_d.keys())
+        six.assertCountEqual(self, keys, showversions_d.keys())
 
     def test_combine_show_commands_attributes(self):
         showversions_d = tools.create_dict_from_objects(self.showversions)
@@ -87,7 +90,7 @@ class TestTools(unittest.TestCase):
         tools.combine(showversions_d, showinterfaces_d, match_show_commands)
         keys = ['hostname', 'ip', 'free_eth_ports', 'model', 'serial', 'ios_version', 'ios']
         showversion = showversions_d['192.168.0.92']
-        self.assertItemsEqual(keys, showversion.keys())
+        six.assertCountEqual(self, keys, showversion.keys())
 
     def test_save_dict_as_json(self):
         showversions_d = tools.create_dict_from_objects(self.showversions)
@@ -108,7 +111,7 @@ class TestTools(unittest.TestCase):
         tools.save_dict_as_json(showversions_d, 'result_test.json')
         with open('result_test.json', 'r') as fp:
             showversions_l = json.load(fp)
-        self.assertItemsEqual(showversions_d, showversions_l)
+        six.assertCountEqual(self, showversions_d, showversions_l)
 
     def test_ordered_csv(self):
         showversions_d = tools.create_dict_from_objects(self.showversions)
@@ -138,3 +141,6 @@ class TestTools(unittest.TestCase):
         file_exists = tools.list_files(file_name_regex, '.')
         if file_exists:
             os.remove('result_test.csv')
+
+if __name__ == '__main__':
+    unittest.main()
