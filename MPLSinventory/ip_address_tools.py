@@ -1,27 +1,15 @@
 import sys
 
-PYTHON2 = sys.version_info[0] < 3
+""" ip_address.py module that resolves differences between the ipaddr (python2)
+    and ipaddress (python3) modules.
 
-if PYTHON2:
-    from ipaddr import IPv4Network, IPv4Address
+    In ipaddr (python2) a IPv4Network can be a single host address within a
+    network (i.e. 10.0.1.20/24).
+    In ipaddress (python3) a IPv4Network must be the network address
+    (i.e. 10.0.1.0/24)
 
-    class IPv4Interface(IPv4Network):
-        # def __init__(self, config):
-        #     super(IPv4Interface, self).__init__(config)
-
-        @property
-        def network(self):
-            return IPv4Network(self)
-else:
-    from ipaddress import IPv4Network, IPv4Address, IPv4Interface
-
-
-""" ip_address.py module that acts resolves differences between the ipaddr (python2) and ipaddress (python3) modules.
-
-    In ipaddr (python2) a IPv4Network can be a single host address within a network (i.e. 10.0.1.20/24).
-    In ipaddress (python3) a IPv4Network must be the network address (i.e. 10.0.1.0/24)
-
-    The ipaddress module has a IPv4Interface object that can be a single host with a network (i.e. 10.0.1.20/24).
+    The ipaddress module has a IPv4Interface object that can be a single host
+    with a network (i.e. 10.0.1.20/24).
 
     The IPv4Interface cannot be used to verify if an IP address is in a network:
     >>> IPv4Address('10.0.1.1') in IPv4Interface('10.0.1.20/24')
@@ -38,20 +26,17 @@ else:
     True
 """
 
+PYTHON2 = sys.version_info[0] < 3
 
-# def ip_address(address):
-#     return IPv4Address(address)
+if PYTHON2:
+    from ipaddr import IPv4Network, IPv4Address
 
+    class IPv4Interface(IPv4Network):
+        # def __init__(self, config):
+        #     super(IPv4Interface, self).__init__(config)
 
-# def ip_network(address):
-#     if PYTHON2:
-#         return IPv4Network(address)
-#     else:
-#         return IPv4Interface(address)
-
-
-# def ip_in_network(ip_address, ip_network):
-#     if PYTHON2:
-#         return ip_address in ip_network
-#     else:
-#         return ip_address in ip_network.network
+        @property
+        def network(self):
+            return IPv4Network(self)
+else:
+    from ipaddress import IPv4Network, IPv4Address, IPv4Interface
