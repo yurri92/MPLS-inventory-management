@@ -102,7 +102,8 @@ class ShowVersion(ParseShowCommand):
         'model': (r'^\s*.isco\s+(\S+).+memory\.\s*$', str),
         'hostname': (r'^\s*(\S+)\s+uptime', str),
         'serial': (r'^\s*Processor\s+board\s+ID\s+(\S+)\s*$', str),
-        'ios_version': (r'^.*IOS\s+.+,\s+Version\s*(\d+)\.(\d+)\((.+)\)([A-Z]*?)(\d*[a-z]*),.+$', tuple)
+        'ios_version': (r'^.*IOS\s+.+,\s+Version\s*(\d+)\.(\d+)\((.+)\)([A-Z]*?)(\d*[a-z]*),.+$', tuple),
+        'ios_str': (r'^.*IOS\s+.+,\s+Version\s*(\d+.+),.+$', str)
     }
 
     def __init__(self, config):
@@ -252,7 +253,7 @@ class ShowIPBGPSum(ParseShowCommand):
 
     def _set_bgp_neighbors(self):
         self.neighbors = {}
-        regex = r'^\s*(\d+\.\d+\.\d+\.\d+)\s+\d+\s+(\d+)\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+(\w+)\s+(.+)\s*$'
+        regex = r'^\s*(\d+\.\d+\.\d+\.\d+)\s+\d+\s+(\d+)\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+(\S+)\s+(.+)\s*$'
         for neighbor, remote_as, up_down, state in search_all(regex, self.config):
             if state.isdigit():
                 state = int(state)
@@ -260,3 +261,45 @@ class ShowIPBGPSum(ParseShowCommand):
                                                     remote_as=int(remote_as),
                                                     up_down=up_down,
                                                     state=state)
+
+
+arp_entry = namedtuple('arp_entry', ['ip', 'mac', 'age', 'interface'])
+
+
+class ShowIParp(ParseShowCommand):
+    """ Class that analyses and stores the output of 'show ip arp' on a Cisco device
+
+        output_show_ip_arp = [
+            'router#show ip arp GigabitEthernet0/2/2.1000',
+            'Protocol  Address          Age (min)  Hardware Addr   Type   Interface',
+            'Internet  10.0.10.2               -   aa0f.1b30.1522  ARPA   GigabitEthernet0/2/2.1000',
+            'Internet  10.0.10.1             233   aaa2.ee01.4c00  ARPA   GigabitEthernet0/2/2.1000'
+        ]
+
+        c = ShowIParp(output_show_ip_arp)
+
+        c.arp_table.keys() -> ['10.0.10.2', '10.0.10.1']
+
+        c.arp_table['10.0.10.2'].ip -> IPv4Address('10.0.10.2')
+        c.arp_table['10.0.10.2'].mac -> 'aaa2.ee01.4c00'
+        c.arp_table['10.0.10.2'].age -> '-'
+        c.arp_table['10.0.10.2'].interface = 'GigabitEthernet0/2/2.1000'
+
+    """
+
+    _showcommand = 'arp'
+
+    def __init__(self, config):
+        super(ShowIParp, self).__init__(config)
+        self._set_arp_table()
+
+    def _set_arp_table(self):
+        self.arp_table = {}
+        regex = r'^\s*Internet\s+(\d+\.\d+\.\d+\.\d+)\s+(\S+)\s+(\S+)\s+ARPA\s+(\S+)\s*$'
+        for ip, age, mac, interface in search_all(regex, self.config):
+            if age.isdigit():
+                age = int(age)
+            self.arp_table[ip] = arp_entry(ip=IPv4Address(ip),
+                                           age=age,
+                                           mac=mac,
+                                           interface=interface)

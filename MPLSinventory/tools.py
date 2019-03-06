@@ -79,7 +79,7 @@ def read_files_to_objects(path, result_type, regex=r'(.+)', id='', verbose=False
     for i, file_name in enumerate(file_names, 1):
         if verbose:
             # pass
-            print("opening : {}/{} {}/{}...".format(i, total, path, file_name), end="")
+            print("opening : {}/{} {}/{}...".format(i, total, path, file_name), end="", flush=True)
         value = result_type.load(file_name, path=path)
         if value:
             key = getattr(value, id, file_name)
